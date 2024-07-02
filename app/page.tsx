@@ -14,7 +14,7 @@ export default function Home() {
         <div className="container flex flex-col gap-4 lg:px-14 ">
           <div className=" flex justify-center items-center gap-4">
             <div className=" flex flex-col gap-4">
-              <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-balance text-center lg:text-left ">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-balance text-center lg:text-left ">
                 Hello, I&apos;m {""}
                 <span className=" bg-gradient-to-r from-orange-700 via-blue-500 to-green-400 text-transparent bg-clip-text bg-300% animate-gradient">
                   Ronaldo
