@@ -60,7 +60,7 @@ export default function Home() {
             </div>
 
             <Image
-              src="/static/undraw_website.svg"
+              src="/undraw_website.svg"
               width={300}
               height={300}
               alt=""
