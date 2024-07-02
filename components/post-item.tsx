@@ -28,12 +28,6 @@ export function PostItem({
 
   const r = useRouter();
 
-  console.log(p);
-
-  console.log(f);
-
-  console.log(r);
-
   return (
     <article className="flex flex-col gap-2 border-border border-b py-6 //border-border //border //rounded-md //mt-4 //p-6">
       <div>
