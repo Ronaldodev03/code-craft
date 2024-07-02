@@ -1,0 +1,118 @@
+---
+#title: Understanding Synchronous and Asynchronous JavaScript (1)
+title: Async JS (01) | Understanding Synchronous and Asynchronous
+description: Exploring the differences between synchronous and asynchronous JavaScript, including the runtime environment, event loop, and callback queue.
+date: 2024-03-25
+tags: ["JavaScript", "async"]
+published: true
+---
+
+JavaScript is a single-threaded language, meaning it can only execute one task at a time. However, it can manage multiple tasks concurrently through asynchronous programming. In this article, we'll explore the differences between synchronous and asynchronous JavaScript, and how the runtime environment, event loop, and callback queue work together to handle tasks efficiently.
+
+## Synchronous JavaScript
+
+Synchronous code executes sequentially, one line at a time. Each operation must complete before the next one begins. This can lead to blocking behavior, where time-consuming tasks halt the execution of subsequent code.
+
+## Example of Synchronous Code
+
+```js showLineNumbers
+console.log("Start");
+
+for (let i = 0; i < 1e9; i++) {
+  // Simulate a time-consuming task
+}
+
+console.log("End");
+
+// output:
+// Start
+// End (after a noticeable delay)
+```
+
+## Asynchronous JavaScript
+
+Asynchronous code allows tasks to be executed concurrently without blocking the main thread. This is crucial for tasks such as fetching data from an API or reading files, which can take an unpredictable amount of time.
+
+```js showLineNumbers
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Timeout");
+}, 2000);
+
+console.log("End");
+
+// output:
+// Start
+// End
+// Timeout (after a 2-second delay)
+```
+
+## How JavaScript Manages Asynchronous Programming
+
+JavaScript is inherently synchronous and single-threaded, meaning it can execute only one task at a time. However, it handles asynchronous operations through its runtime environment and the event-driven nature of the language. Here’s how it achieves this:
+
+<Image
+  className="mx-auto"
+  src="/static/async-js.png"
+  width={500}
+  height={500}
+  alt=""
+/>
+
+## JavaScript Runtime Environment
+
+The JavaScript runtime environment consists of several key components: the call stack, event loop, and various queues (e.g., callback queue, microtask queue). These components work together to manage the execution of synchronous and asynchronous code.
+
+## Call Stack
+
+The call stack is where JavaScript keeps track of function calls. It operates in a LIFO (Last In, First Out) manner. When a function is invoked, it is added to the stack. Once the function execution is complete, it is removed from the stack.
+
+## Web APIs
+
+Web APIs are provided by the browser (or Node.js). They include functionalities such as setTimeout, fetch, DOM events, etc. When an asynchronous function is called (e.g., setTimeout), it is passed to the web API and is removed from the call stack. The web API handles the execution independently.
+
+## Callback Queue
+
+The callback queue stores callback functions from asynchronous operations like setTimeout and I/O tasks. These functions are added to the queue once their associated tasks are complete. The event loop will only move functions from the callback queue to the call stack when the call stack is empty.
+
+## Microtask Queue
+
+The microtask queue handles microtasks, such as resolved promises. Microtasks have a higher priority than the callback queue. Microtasks are executed immediately after the current operation in the call stack completes and before any task in the callback queue.
+
+## Event Loop
+
+The event loop continuously checks the call stack to see if it’s empty. If the call stack is empty, the event loop moves tasks from the callback queue (or microtask queue, if there are any) to the call stack for execution. This ensures that asynchronous callbacks are executed as soon as possible without blocking the main thread.
+
+## Example: Event Loop in Action
+
+```js showLineNumbers
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Timeout 1");
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("Promise 1");
+});
+
+setTimeout(() => {
+  console.log("Timeout 2");
+}, 0);
+
+console.log("End");
+
+// output:
+// Start
+// End
+// Promise 1
+// Timeout 1
+// Timeout 2
+```
+
+In this example, the promise resolves before the setTimeout callbacks, demonstrating the priority of the microtask queue.
+
+## Conclusion
+
+Understanding the differences between synchronous and asynchronous JavaScript is essential for writing efficient, non-blocking code. By leveraging the runtime environment, event loop, and various queues, JavaScript can manage multiple tasks concurrently, ensuring smooth and responsive applications. Embracing asynchronous programming techniques is key to mastering modern JavaScript development.

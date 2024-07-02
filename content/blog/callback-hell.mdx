@@ -1,0 +1,306 @@
+---
+#title: Exploring Callback Hell in JavaScript (2)
+title: Async JS (02) | Exploring Callback Hell
+description: Understanding and avoiding callback hell with modern JavaScript techniques.
+date: 2024-05-24
+##tags: ["JavaScript", "callback hell", "async/await", "promises"]
+tags: ["JavaScript", "async"]
+published: true
+---
+
+Callback hell, also known as the "Pyramid of Doom," is a common issue in JavaScript that occurs when multiple nested callbacks make code difficult to read and maintain. In this article, we'll explore what callback hell is, why it's problematic, and how modern JavaScript techniques can help avoid it.
+
+## What is Callback Hell?
+
+<span className="mix-blend-plus-lighter text-blue-700/80">
+  Callback hell happens when callbacks are nested within other callbacks
+  multiple levels deep. This can lead to deeply indented code that is hard to
+  understand and debug.
+</span>
+
+<Image
+  className="mx-auto"
+  src="/static/callback.jpg"
+  width={500}
+  height={500}
+  alt=""
+/>
+
+## Why do we use callbacks in javascript?
+
+Let's explore why we use callbacks in JavaScript.
+
+### Synchronous Code
+
+The following code is synchronous, meaning that `task1()` will be executed before `task2()`, `task2()` before `task3()`, and so on. Each line of code will not be executed until the previous line has finished execution.
+
+```js showLineNumbers
+function task1() {
+  console.log("Task 1 complete");
+}
+
+function task2() {
+  console.log("Task 2 complete");
+}
+
+function task3() {
+  console.log("Task 3 complete");
+}
+
+function task4() {
+  console.log("Task 4 complete");
+}
+
+//calling the functions
+task1();
+task2();
+task3();
+task4();
+console.log("All tasks complete");
+
+//output:
+//Task 1 complete
+//Task 2 complete
+//Task 3 complete
+//Task 4 complete
+//All tasks complete
+```
+
+### Asynchronous Code with `setTimeout`
+
+Next, let's make the code asynchronous by using `setTimeout`. `setTimeout` is part of the browser API and allows us to write asynchronous code. In this case, we cannot precisely know in what order the console logs will appear.
+
+```js showLineNumbers /setTimeout/
+function task1() {
+  setTimeout(() => {
+    console.log("Task 1 complete");
+  }, 2000);
+}
+
+function task2() {
+  setTimeout(() => {
+    console.log("Task 2 complete");
+  }, 2000);
+}
+
+function task3() {
+  setTimeout(() => {
+    console.log("Task 3 complete");
+  }, 2000);
+}
+
+function task4() {
+  setTimeout(() => {
+    console.log("Task 4 complete");
+  }, 2000);
+}
+
+//calling the functions
+task1();
+task2();
+task3();
+task4();
+console.log("All tasks complete");
+
+//output:
+//All tasks complete --> always first because this line is synchronous.
+//Task 3 complete
+//Task 1 complete
+//Task 4 complete
+//Task 2 complete
+```
+
+### Ensuring Order with Callbacks
+
+To ensure that this asynchronous code executes in order, we can use callbacks.
+
+```js showLineNumbers /callback/
+function task1(callback) {
+  setTimeout(() => {
+    console.log("Task 1 complete");
+  }, [2000]);
+
+  callback();
+}
+
+function task2(callback) {
+  setTimeout(() => {
+    console.log("Task 2 complete");
+  }, [2000]);
+
+  callback();
+}
+function task3(callback) {
+  setTimeout(() => {
+    console.log("Task 3 complete");
+  }, [2000]);
+
+  callback();
+}
+
+function task4(callback) {
+  setTimeout(() => {
+    console.log("Task 4 complete");
+  }, [2000]);
+
+  callback();
+}
+
+//calling the functions
+task1(() => {
+  task2(() => {
+    task3(() => {
+      task4(() => {
+        console.log("All tasks complete");
+      });
+    });
+  });
+});
+
+//output:
+//Task 1 complete
+//Task 2 complete
+//Task 3 complete
+//Task 4 complete
+//All tasks complete
+```
+
+By using callbacks, we ensure that each task waits for the previous one to complete before starting. This allows us to maintain the desired order of execution, even with asynchronous operations.
+
+## Problems with Callback Hell
+
+- **Readability**: Nested callbacks can make code hard to read.
+- **Maintainability**: Modifying deeply nested code is error-prone.
+- **Error Handling**: Managing errors in nested callbacks is cumbersome.
+- **Scalability**: Adding more asynchronous tasks increases complexity.
+
+## Using Promises to Avoid Callback Hell
+
+Promises provide a cleaner way to handle asynchronous operations by allowing chaining.
+
+```js showLineNumbers /new Promise/ /resolve()/ /resolve/
+function task1() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log("Task 1 complete");
+      resolve();
+    }, 2000);
+  });
+}
+
+function task2() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log("Task 2 complete");
+      resolve();
+    }, 2000);
+  });
+}
+
+function task3() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log("Task 3 complete");
+      resolve();
+    }, 2000);
+  });
+}
+
+function task4() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log("Task 4 complete");
+      resolve();
+    }, 2000);
+  });
+}
+
+// chaining the promises
+task1()
+  .then(task2)
+  .then(task3)
+  .then(task4)
+  .then(() => {
+    console.log("All tasks complete");
+  });
+
+//output:
+//Task 1 complete
+//Task 2 complete
+//Task 3 complete
+//Task 4 complete
+//All tasks complete
+```
+
+## Async/Await for Cleaner Code
+
+The async/await syntax, introduced in ES2017, makes asynchronous code look more like synchronous code, enhancing readability and maintainability.
+
+```js showLineNumbers /async/ /await/
+async function executeTasks() {
+  await task1();
+  console.log("Task 1 complete");
+
+  await task2();
+  console.log("Task 2 complete");
+
+  await task3();
+  console.log("Task 3 complete");
+
+  await task4();
+  console.log("Task 4 complete");
+
+  console.log("All tasks complete");
+}
+
+executeTasks();
+
+//output:
+//Task 1 complete
+//Task 2 complete
+//Task 3 complete
+//Task 4 complete
+//All tasks complete
+```
+
+## Error Handling with Async/Await
+
+Using async/await simplifies error handling with try/catch blocks.
+
+```js showLineNumbers /try/ /catch/ /reject("Error during task execution")/ /reject/
+function taskWithError() {
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject("Error during task execution");
+    }, 2000);
+  });
+}
+
+async function executeTasksWithErrorHandling() {
+  try {
+    await task1();
+    console.log("Task 1 complete");
+
+    await taskWithError();
+    console.log("Task with error complete");
+
+    await task3();
+    console.log("Task 3 complete");
+  } catch (error) {
+    console.error(error);
+  }
+
+  console.log("All tasks attempted");
+}
+
+executeTasksWithErrorHandling();
+
+//output:
+//Task 1 complete
+//Error during task execution
+//All tasks attempted
+```
+
+## Conclusion
+
+Callback hell can be a significant challenge in JavaScript development, but by using modern techniques like Promises and async/await, we can write more readable, maintainable, and scalable code. Embracing these practices helps avoid the pitfalls of deeply nested callbacks and makes asynchronous programming more manageable.

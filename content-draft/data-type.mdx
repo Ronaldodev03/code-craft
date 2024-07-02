@@ -1,0 +1,99 @@
+---
+title: Understanding Primitive and Non-Primitive Data Types in JavaScript
+description: Exploring the different types of data in JavaScript, including primitive and non-primitive data types, their characteristics, and usage.
+date: 2024-05-15
+tags: ["JavaScript", "data types"]
+published: true
+---
+
+JavaScript provides various data types to store and manipulate different kinds of values. These data types are categorized into primitive and non-primitive (or reference) types. In this article, we'll explore these categories, their characteristics, and how they are used in JavaScript.
+
+## Primitive Data Types
+
+Primitive data types are the most basic data types in JavaScript. They are immutable, meaning their values cannot be changed once created. JavaScript has seven primitive data types:
+
+1. Number: Represents both integer and floating-point numbers.
+2. String: Represents sequences of characters.
+3. Boolean: Represents logical values true or false.
+4. Undefined: Represents an uninitialized variable.
+5. Null: Represents the intentional absence of any object value.
+6. Symbol: Represents unique identifiers (introduced in ES6).
+7. BigInt: Represents integers with arbitrary precision (introduced in ES11).
+
+### Example of Primitive Data Types
+
+```js
+const number = 42;
+const string = "Hello, World!";
+const boolean = true;
+let undefinedVar;
+const nullVar = null;
+const symbol = Symbol("unique");
+const bigInt = 1234567890123456789012345678901234567890n;
+
+console.log(typeof number); // "number"
+console.log(typeof string); // "string"
+console.log(typeof boolean); // "boolean"
+console.log(typeof undefinedVar); // "undefined"
+console.log(typeof nullVar); // "object" (special case)
+console.log(typeof symbol); // "symbol"
+console.log(typeof bigInt); // "bigint"
+```
+
+## Non-Primitive Data Types
+
+Non-primitive data types, also known as reference types, include objects, arrays, and functions. These types are mutable and can hold collections of values or more complex entities.
+
+1. Object: Used to store collections of key-value pairs.
+2. Array: A special type of object for storing ordered collections.
+3. Function: A special type of object that can be invoked.
+
+### Example of Non-Primitive Data Types
+
+```js
+const object = {
+  name: "John",
+  age: 30,
+};
+
+const array = [1, 2, 3, 4, 5];
+
+function greet() {
+  return "Hello, World!";
+}
+
+console.log(typeof object); // "object"
+console.log(typeof array); // "object"
+console.log(typeof greet); // "function"
+```
+
+## Differences Between Primitive and Non-Primitive Data Types
+
+### Immutability vs. Mutability
+
+- Primitive types are immutable. Once a value is assigned, it cannot be changed. Operations on primitives return new values.
+- Non-primitive types are mutable. The value of an object, array, or function can be changed after creation.
+
+### Storage and Copying
+
+- Primitive types are stored directly in the variable and are copied by value.
+- Non-primitive types are stored as references. When assigned or passed to a function, a reference to the memory location is copied, not the actual value.
+
+### Example: Copying Primitive vs. Non-Primitive Types
+
+```js let primitiveA = 10;
+let primitiveB = primitiveA;
+primitiveB = 20;
+console.log(primitiveA); // 10
+
+let objectA = { key: "value" };
+let objectB = objectA;
+objectB.key = "new value";
+console.log(objectA.key); // "new value"
+```
+
+In the example above, changing primitiveB does not affect primitiveA because they are copied by value. However, changing objectB affects objectA because they reference the same memory location.
+
+## Conclusion
+
+Understanding the differences between primitive and non-primitive data types is essential for effectively working with JavaScript. Primitive data types are simple and immutable, making them straightforward to use and predict. Non-primitive data types offer flexibility and complexity, allowing the creation of more sophisticated data structures and functions. Mastering both types enables developers to write efficient and robust JavaScript code.
