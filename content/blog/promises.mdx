@@ -28,7 +28,7 @@ Promises in JavaScript provide a powerful way to manage asynchronous operations.
 
 Promises have three states: pending, fulfilled, or rejected. They are instantiated with an executor function that contains asynchronous code. Let's look at a basic example:
 
-```js
+```js showLineNumbers
 const promise = new Promise((resolve, reject) => {
   // Asynchronous operation, e.g., fetching data
   setTimeout(() => {
@@ -59,7 +59,7 @@ promise
 
 Promises can be chained using `.then()` to handle sequential asynchronous operations:
 
-```js
+```js showLineNumbers
 fetchData()
   .then(processData)
   .then(saveData)
@@ -82,7 +82,7 @@ fetchData()
 
 Async functions paired with await provide a cleaner syntax for working with Promises:
 
-```js
+```js showLineNumbers
 async function fetchDataWithAsync() {
   try {
     const data = await fetchData(); // Await resolves the promise
@@ -104,7 +104,7 @@ fetchDataWithAsync();
 
 `Promise.all()` is useful for executing multiple promises concurrently and handling them collectively:
 
-```js
+```js showLineNumbers
 const promises = [fetchData1(), fetchData2(), fetchData3()];
 
 Promise.all(promises)
