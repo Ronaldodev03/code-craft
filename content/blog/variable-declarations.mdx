@@ -13,7 +13,7 @@ Understanding the differences between const, let, and var is crucial for writing
 
 In JavaScript, variables can be declared using const, let, or var. Each has its own unique behavior and implications for how your code executes.
 
-## const
+### const
 
 - **Immutable Binding**: Variables declared with const cannot be reassigned.
 - **Block Scoped**: const is block-scoped, meaning it is only accessible within the block it was declared in.
@@ -24,7 +24,7 @@ const PI = 3.14;
 PI = 3.1415; // TypeError: Assignment to constant variable.
 ```
 
-## let
+### let
 
 - **Mutable Binding**: Variables declared with let can be reassigned.
 - **Block Scoped**: Like const, let is also block-scoped.
@@ -35,7 +35,7 @@ let counter = 0;
 counter = 1; // Valid reassignment
 ```
 
-## var
+### var
 
 - **Function Scoped**: Variables declared with var are function-scoped, meaning they are accessible throughout the entire function, even if declared inside a block.
 - **Hoisting**: var is hoisted to the top of its scope and initialized with undefined. This can lead to unexpected behavior if not handled carefully.
