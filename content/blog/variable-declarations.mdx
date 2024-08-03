@@ -1,144 +1,134 @@
 ---
 #title: Understanding const, let, and var in JavaScript
-title: JS Fundamentals | const, let, and var Explained
-description: A deep dive into the differences between const, let, and var in JavaScript, covering hoisting, TDZ, variable environment, and scope.
-date: 2024-08-03
-tags: ["JavaScript", "hoisting", "scope", "TDZ"]
+title: JavaScript Basics | Understanding const, let, and var
+description: Learn about the differences between const, let, and var in JavaScript, including the concept of hoisting, the Temporal Dead Zone (TDZ), and the mutability of objects and arrays declared with const.
+date: 2024-08-02
+tags: ["JavaScript", "const", "let", "var"]
 published: true
 ---
 
-Understanding the differences between const, let, and var is crucial for writing robust JavaScript code. In this article, we'll explore how these three keywords work, their impact on variable declaration, and their interaction with concepts like hoisting, scope, and the Temporal Dead Zone (TDZ).
+Understanding how to declare variables properly is fundamental to writing clean, bug-free JavaScript. In this article, we'll explore the differences between const, let, and var, delve into the concepts of hoisting, the Temporal Dead Zone (TDZ), and discuss best practices for their use.
 
-## Variable Declaration in JavaScript
+## The Basics of Variable Declarations
 
-In JavaScript, variables can be declared using const, let, or var. Each has its own unique behavior and implications for how your code executes.
+JavaScript provides three ways to declare variables: var, let, and const. Each has its own characteristics and is suited for different use cases.
 
-### const
+### `var`
 
-- **Immutable Binding**: Variables declared with const cannot be reassigned.
-- **Block Scoped**: const is block-scoped, meaning it is only accessible within the block it was declared in.
-- **Hoisting**: While const is hoisted, it cannot be accessed before its declaration due to the Temporal Dead Zone (TDZ).
-
-```js showLineNumbers
-const PI = 3.14;
-PI = 3.1415; // TypeError: Assignment to constant variable.
-```
-
-### let
-
-- **Mutable Binding**: Variables declared with let can be reassigned.
-- **Block Scoped**: Like const, let is also block-scoped.
-- **Hoisting**: let is hoisted but, similar to const, it cannot be accessed before its declaration due to the TDZ.
+<span className="mix-blend-plus-lighter text-blue-700/80">
+  `var` is the oldest way to declare variables in JavaScript and has
+  function-level scope.
+</span>
 
 ```js showLineNumbers
-let counter = 0;
-counter = 1; // Valid reassignment
-```
-
-### var
-
-- **Function Scoped**: Variables declared with var are function-scoped, meaning they are accessible throughout the entire function, even if declared inside a block.
-- **Hoisting**: var is hoisted to the top of its scope and initialized with undefined. This can lead to unexpected behavior if not handled carefully.
-
-```js showLineNumbers
-console.log(x); // undefined
-var x = 5;
-console.log(x); // 5
-```
-
-## Hoisting
-
-Hoisting is JavaScript's behavior of moving variable declarations to the top of their scope before code execution. This means that variable declarations are processed before any code is executed, but initializations are not.
-
-- `var` **Hoisting**: Variables declared with var are hoisted and initialized with `undefined`.
-
-```js showLineNumbers
-console.log(a); // undefined
-var a = 10;
-```
-
-- `let` **and** `const` **Hoisting**: Variables declared with let and const are hoisted but are not initialized. Accessing them before their declaration results in a ReferenceError due to the TDZ.
-
-```js showLineNumbers
-console.log(b); // ReferenceError: Cannot access 'b' before initialization
-let b = 10;
-```
-
-## Temporal Dead Zone (TDZ)
-
-The TDZ is the time between the entering of a block and the actual variable declaration. Variables declared with `let` and `const` remain in the TDZ from the start of the block until the declaration is encountered.
-
-```js showLineNumbers
-{
-  console.log(c); // ReferenceError
-  let c = 5;
+function example() {
+  var message = "Hello, World!";
+  console.log(message); // Outputs: Hello, World!
 }
+console.log(message); // ReferenceError: message is not defined
 ```
 
-In this example, the variable `c` is in the TDZ until its declaration is processed.
+#### Key Characteristics:
 
-## Variable Environment
-
-When a JavaScript function is called, a new execution context is created. This context contains a variable environment that holds bindings for variables, functions, and parameters within the function.
-
-- `var` **in Function Scope**: Variables declared with `var` are part of the function's variable environment and can be accessed throughout the function, even if declared inside a block.
+- **Function Scope**: `var` is scoped to the function in which it's declared. If declared outside of a function, it has global scope.
+- **Hoisting**: Variables declared with `var` are hoisted to the top of their scope. This means the declaration is moved to the top of the scope during the compile phase, but the initialization remains in place. As a result, you can access the variable before its declaration, but it will have a value of `undefined`.
 
 ```js showLineNumbers
-function testVar() {
-  var x = 1;
-  if (true) {
-    var x = 2;
-    console.log(x); // 2
-  }
-  console.log(x); // 2
-}
+console.log(hoistedVar); // Outputs: undefined
+var hoistedVar = "I'm hoisted!";
+console.log(hoistedVar); // Outputs: I'm hoisted!
 ```
 
-- `let` **and** `const` **in Block Scope**: `let` and `const` are bound to the block they are declared in, which prevents issues like those seen with `var`.
+### `let`
 
-```js showLineNumbers
-function testLetConst() {
-  let y = 1;
-  if (true) {
-    let y = 2;
-    console.log(y); // 2
-  }
-  console.log(y); // 1
-}
-```
-
-## Scope
-
-Scope determines the accessibility of variables in different parts of the code. JavaScript has two main types of scope:
-
-- **Global Scope**: Variables declared outside any function or block are in the global scope and accessible throughout the code.
-
-- **Local Scope**: Variables declared inside a function or block are in the local scope and accessible only within that function or block.
-
-- **Block Scope with `let` and `const`**:
+<span className="mix-blend-plus-lighter text-blue-700/80">
+  `let` was introduced in ES6 and provides block-level scope, making it more
+  predictable and safer to use than `var`.
+</span>
 
 ```js showLineNumbers
 if (true) {
-  let z = 3;
-  const w = 4;
+  let blockScoped = "This is block scoped";
+  console.log(blockScoped); // Outputs: This is block scoped
 }
-console.log(z); // ReferenceError: z is not defined
-console.log(w); // ReferenceError: w is not defined
+console.log(blockScoped); // ReferenceError: blockScoped is not defined
 ```
 
-- **Function Scope with `var`**:
+#### Key Characteristics:
+
+- **Block Scope**: `let` is limited to the block in which it is declared (e.g., within curly braces `{}`).
+- **Hoisting and Temporal Dead Zone (TDZ)**: Like `var`, variables declared with `let` are hoisted to the top of their block scope. However, they are not initialized, and accessing them before their declaration results in a `ReferenceError`. This period between entering the block and the declaration of the variable is called the **Temporal Dead Zone (TDZ)**.
 
 ```js showLineNumbers
-function scopeExample() {
-  var a = 1;
-  if (true) {
-    var a = 2; // Same variable as above
-    console.log(a); // 2
-  }
-  console.log(a); // 2
-}
+console.log(hoistedLet); // ReferenceError: Cannot access 'hoistedLet' before initialization
+let hoistedLet = "This will cause an error!";
 ```
+
+### `const`
+
+<span className="mix-blend-plus-lighter text-blue-700/80">
+  `const` is also block-scoped and is used to declare variables that should not
+  be reassigned.
+</span>
+
+```js showLineNumbers
+const pi = 3.14;
+pi = 3.14159; // TypeError: Assignment to constant variable.
+```
+
+Key Characteristics:
+
+- **Immutability**: Variables declared with `const` cannot be reassigned after their initial assignment. However, objects and arrays declared with `const` can still have their contents modified.
+
+  - **Why? `const`** ensures that the _reference_ to the value is constant, but the value itself (if it’s an object or array) can be mutable. This means that while you cannot reassign the entire object or array to a new value, you can modify its properties or elements.
+
+```js showLineNumbers
+const myArray = [1, 2, 3];
+myArray.push(4); // This is allowed
+console.log(myArray); // Outputs: [1, 2, 3, 4]
+
+const myObject = { name: "John" };
+myObject.name = "Jane"; // This is allowed
+console.log(myObject); // Outputs: { name: "Jane" }
+
+// However, you cannot reassign the entire object or array:
+myArray = [5, 6, 7]; // TypeError: Assignment to constant variable.
+myObject = { name: "Doe" }; // TypeError: Assignment to constant variable.
+```
+
+- **Block Scope**: Like `let`, `const` is also block-scoped.
+- **Hoisting and TDZ**: Similar to `let`, `const` is hoisted but remains uninitialized until the code execution reaches its declaration, putting it in the Temporal Dead Zone (TDZ) until then.
+
+```js showLineNumbers
+console.log(hoistedConst); // ReferenceError: Cannot access 'hoistedConst' before initialization
+const hoistedConst = "This will cause an error!";
+```
+
+## When to Use `var`, `let`, or `const`
+
+<Image
+  className="mx-auto"
+  src="/variables-js.png"
+  width={500}
+  height={500}
+  alt=""
+/>
+
+### `var`
+
+- Use `var` if you need to support very old JavaScript environments, although this is rare today.
+- Be cautious with `var` due to its function-scoping and hoisting behaviors.
+
+### `let`
+
+- Use `let` when you need a variable that will be reassigned later.
+- It’s ideal for block-scoped variables that are local to loops, conditionals, or any block.
+
+### `const`
+
+- Use `const` by default, as it clearly indicates that the variable’s value should not change.
+- It promotes safer coding practices by preventing unintended reassignment.
 
 ## Conclusion
 
-Understanding the differences between `const`, `let`, and `var` is key to avoiding common pitfalls in JavaScript. By knowing how hoisting, scope, and the Temporal Dead Zone work, you can write cleaner, more predictable code. Use `const` when you don't intend to reassign variables, `let` when reassignment is needed, and avoid `var` unless you need its function-scoping behavior.
+Choosing between `var`, `let`, and `const` is more than just a matter of syntax; it’s about writing clear, predictable, and maintainable code. Understanding concepts like hoisting, the Temporal Dead Zone (TDZ), and the mutability of objects and arrays declared with `const` helps you avoid common pitfalls and make informed decisions when declaring variables. By defaulting to `const` and using `let` when reassignment is necessary, you can write safer and more robust JavaScript code.
