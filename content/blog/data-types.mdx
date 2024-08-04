@@ -1,0 +1,213 @@
+---
+#title: Understanding Primitives and Non-Primitives in JavaScript
+title: JavaScript Basics | Primitives vs. Non-Primitives
+description: Dive into the fundamental differences between primitive and non-primitive data types in JavaScript, how they behave, and why it matters, including insights on memory allocation and the compile phase.
+date: 2024-08-03
+tags: ["JavaScript", "data types", "memory management"]
+published: true
+---
+
+Understanding the difference between primitive and non-primitive data types is crucial for mastering JavaScript. These two categories of data types behave differently, which can have significant implications for how you write and debug your code. In this article, we'll explore what makes a data type primitive or non-primitive, discuss memory management concepts like the stack and the heap, and explain what happens during the compile phase in JavaScript.
+
+## What Are Primitive Data Types?
+
+Primitive data types are the most basic kinds of data in JavaScript. They are immutable, meaning that once a primitive value is created, it cannot be altered. JavaScript has seven primitive data types:
+
+1. **String**: Represents textual data.
+
+```js
+const greeting = "Hello, World!";
+```
+
+2. **Number**: Represents numeric values, both integers and floating points.
+
+```js
+const age = 30;
+const price = 19.99;
+```
+
+3. **BigInt**: Used for integers beyond the safe range of the `Number` type.
+
+```js
+const bigIntValue = 123456789012345678901234567890n;
+```
+
+4. **Boolean**: Represents true or false.
+
+```js
+const isJavaScriptFun = true;
+```
+
+5. **Undefined**: Indicates a variable that has been declared but not assigned a value.
+
+```js
+let uninitialized;
+console.log(uninitialized); // Outputs: undefined
+```
+
+6. **Null**: Represents the intentional absence of any object value.
+
+```js
+const emptyValue = null;
+```
+
+7 **Symbol**: A unique and immutable value often used as an identifier for object properties.
+
+```js
+const uniqueKey = Symbol("key");
+```
+
+#### Key Characteristics of Primitives:
+
+- **Immutability**: Primitive values cannot be changed. When you manipulate a primitive value, a new value is created.
+
+- **Copying**: When you assign a primitive value to a new variable, a _copy_ of that value is made. This means changes to one variable do not affect the other.
+
+```js
+let x = 10;
+let y = x;
+y = 20;
+console.log(x); // Outputs: 10 (x remains unchanged)
+```
+
+## What Are Non-Primitive Data Types?
+
+Non-primitive data types, also known as reference types, include objects, arrays, and functions. Unlike primitives, these types are mutable and are stored by reference.
+
+### Objects
+
+<span className="mix-blend-plus-lighter text-blue-700/80">
+  Objects are collections of key-value pairs, where the keys are strings (or
+  Symbols) and the values can be any data type.
+</span>
+
+```js
+const person = {
+  name: "John",
+  age: 30,
+  isEmployed: true,
+};
+```
+
+### Arrays
+
+<span className="mix-blend-plus-lighter text-blue-700/80">
+  Arrays are ordered collections of values, which can be of any type.
+</span>
+
+```js
+const numbers = [1, 2, 3, 4, 5];
+```
+
+### Functions
+
+<span className="mix-blend-plus-lighter text-blue-700/80">
+  Functions are first-class objects in JavaScript, meaning they can be stored in
+  variables, passed as arguments, and returned from other functions.
+</span>
+
+```js
+function greet() {
+  console.log("Hello!");
+}
+```
+
+#### Key Characteristics of Non-Primitives:
+
+- **Mutability**: Non-primitive values can be modified after they are created. For example, you can add, change, or remove properties from an object or elements from an array.
+
+```js
+const person = { name: "John", age: 30 };
+person.age = 31; // Modifies the existing object
+console.log(person.age); // Outputs: 31
+```
+
+- **Reference Copying**: When you assign a non-primitive value to a new variable, a reference to the same object in memory is copied, not the object itself. This means that changes to one variable will affect the other.
+
+```js
+const originalArray = [1, 2, 3];
+const newArray = originalArray;
+newArray.push(4);
+console.log(originalArray); // Outputs: [1, 2, 3, 4]
+```
+
+## Memory Management: Stack and Heap
+
+Understanding how JavaScript handles memory allocation for primitives and non-primitives is essential for optimizing performance and avoiding common pitfalls.
+
+### The Stack
+
+<span className="mix-blend-plus-lighter text-blue-700/80">
+  The stack is a region of memory used for storing simple, static data like
+  primitive values and function calls.
+</span>
+
+- **Characteristics**:
+
+  - **Fast Access**: The stack operates on a Last-In-First-Out (LIFO) basis, making data retrieval and storage very fast.
+  - **Limited Size**: The stack has a limited size, which means it's best suited for small, simple data types like primitives.
+
+- **Storage**: When you declare a variable with a primitive value, it's stored directly on the stack. Since primitives are immutable, they occupy a fixed amount of memory, making them well-suited for stack storage.
+
+### The Heap
+
+<span className="mix-blend-plus-lighter text-blue-700/80">
+  The heap is a region of memory used for dynamic data, such as objects and
+  arrays, which can grow and shrink over time.
+</span>
+
+- **Characteristics**:
+
+  - **Slower Access**: Accessing data from the heap is slower than from the stack because it involves more complex memory management.
+  - **Flexible Size**: The heap is much larger and more flexible than the stack, capable of handling larger, more complex data types.
+
+- **Storage**: Non-primitive values are stored in the heap. When you create an object or array, the variable in the stack holds a reference (or pointer) to the location of that object in the heap. This is why non-primitives are sometimes referred to as "reference types."
+
+<Image
+  className="mx-auto"
+  src="/stack-heap.png"
+  alt="JavaScript Promises"
+  width={500}
+  height={300}
+/>
+
+## The Compile Phase and Variable Storage
+
+JavaScript is often considered an interpreted language, but modern JavaScript engines like V8 (used in Chrome and Node.js) actually compile JavaScript code before executing it. Here's what happens during the compile phase in relation to variable storage:
+
+### Compile Phase
+
+1. **Variable Declarations**: During the compile phase, JavaScript scans your code for variable declarations (using `var`, `let`, and `const`).
+
+2. **Hoisting**: Variables declared with `var` are hoisted to the top of their scope (either global or function scope), but they are initialized with `undefined`. Variables declared with `let` and `const` are also hoisted, but they remain uninitialized until the code execution reaches their declaration. This creates the **Temporal Dead Zone (TDZ)**, where accessing these variables before their declaration results in a `ReferenceError`.
+
+```JS
+console.log(varVariable); // Outputs: undefined
+console.log(letVariable); // ReferenceError: Cannot access 'letVariable' before initialization
+console.log(constVariable); // ReferenceError: Cannot access 'constVariable' before initialization
+
+var varVariable = "I'm var";
+let letVariable = "I'm let";
+const constVariable = "I'm const";
+
+```
+
+3. **Memory Allocation**: The JavaScript engine allocates memory for variables. Primitives are stored directly in the stack, while references to non-primitives (objects and arrays) are stored in the stack, pointing to the actual data in the heap.
+
+## Execution Phase
+
+After the compile phase, the code enters the execution phase, where variables are assigned values, and the code is run line by line.
+
+## Why Does This Distinction Matter?
+
+Understanding the distinction between primitives and non-primitives is crucial for writing efficient and bug-free JavaScript. Here are a few reasons why:
+
+1. **Memory Management**: Primitives are stored in a stack, which allows for quick access and storage. Non-primitives are stored in a heap, which is slower but necessary for managing the more complex structure of objects and arrays.
+
+2. **Performance Considerations**: Operations on primitives are generally faster due to their immutability and direct storage. However, operations on non-primitives can be slower because they involve reference manipulation and potential deep copying.
+
+3. **Avoiding Common Bugs**: Misunderstanding the difference can lead to bugs, such as unexpected changes to objects or arrays that are passed around in your code.
+
+## Conclusion
+
+By understanding the differences between primitive and non-primitive data types, and how they are stored in memory, you can write more efficient and robust JavaScript code. Primitives, stored by value in the stack, are immutable and fast to access, while non-primitives, stored by reference in the heap
