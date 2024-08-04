@@ -181,7 +181,7 @@ JavaScript is often considered an interpreted language, but modern JavaScript en
 
 2. **Hoisting**: Variables declared with `var` are hoisted to the top of their scope (either global or function scope), but they are initialized with `undefined`. Variables declared with `let` and `const` are also hoisted, but they remain uninitialized until the code execution reaches their declaration. This creates the **Temporal Dead Zone (TDZ)**, where accessing these variables before their declaration results in a `ReferenceError`.
 
-```JS
+```js
 console.log(varVariable); // Outputs: undefined
 console.log(letVariable); // ReferenceError: Cannot access 'letVariable' before initialization
 console.log(constVariable); // ReferenceError: Cannot access 'constVariable' before initialization
@@ -189,7 +189,6 @@ console.log(constVariable); // ReferenceError: Cannot access 'constVariable' bef
 var varVariable = "I'm var";
 let letVariable = "I'm let";
 const constVariable = "I'm const";
-
 ```
 
 3. **Memory Allocation**: The JavaScript engine allocates memory for variables. Primitives are stored directly in the stack, while references to non-primitives (objects and arrays) are stored in the stack, pointing to the actual data in the heap.
@@ -211,3 +210,4 @@ Understanding the distinction between primitives and non-primitives is crucial f
 ## Conclusion
 
 By understanding the differences between primitive and non-primitive data types, and how they are stored in memory, you can write more efficient and robust JavaScript code. Primitives, stored by value in the stack, are immutable and fast to access, while non-primitives, stored by reference in the heap
+import { jsx } from "react/jsx-runtime"
