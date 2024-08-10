@@ -22,7 +22,7 @@ One of the most common uses of the spread operator is with arrays. It can be use
 
 When you want to create a shallow copy of an array, the spread operator is an excellent choice:
 
-```js
+```js showLineNumbers
 const originalArray = [1, 2, 3];
 const copiedArray = [...originalArray];
 
@@ -35,7 +35,7 @@ This approach creates a new array with the same elements as the original. It's i
 
 The spread operator can also be used to combine multiple arrays into one:
 
-```js
+```js showLineNumbers
 const array1 = [1, 2, 3];
 const array2 = [4, 5, 6];
 
@@ -47,7 +47,7 @@ console.log(combinedArray); // Outputs: [1, 2, 3, 4, 5, 6]
 
 Suppose you have two lists of items (e.g., fruits and vegetables) and you want to merge them into a single list:
 
-```js
+```js showLineNumbers
 const fruits = ["Apple", "Banana"];
 const vegetables = ["Carrot", "Broccoli"];
 
@@ -63,7 +63,7 @@ The spread operator is also useful with objects, allowing you to create new obje
 
 When you want to create a shallow copy of an object:
 
-```js
+```js showLineNumbers
 const originalObject = { a: 1, b: 2 };
 const copiedObject = { ...originalObject };
 
@@ -76,7 +76,7 @@ Again, this is a shallow copy, so nested objects will still be referenced.
 
 You can also combine multiple objects into a new one:
 
-```js
+```js showLineNumbers
 const obj1 = { a: 1, b: 2 };
 const obj2 = { c: 3, d: 4 };
 
@@ -88,7 +88,7 @@ console.log(combinedObject); // Outputs: { a: 1, b: 2, c: 3, d: 4 }
 
 In React, you might want to update an object in state without mutating the original object:
 
-```tsx
+```tsx showLineNumbers
 import React, { useState } from "react";
 
 type User = {
@@ -131,7 +131,7 @@ The spread operator can be used to pass an array as individual arguments to a fu
 
 #### Practical Example: Passing Arguments
 
-```js
+```js showLineNumbers
 function sum(a: number, b: number, c: number): number {
   return a + b + c;
 }
@@ -152,7 +152,7 @@ The rest operator (`...`) collects multiple elements or properties into a single
 
 The rest operator is often used in functions to handle variable numbers of arguments:
 
-```js
+```js showLineNumbers
 function sum(...args: number[]): number {
   console.log(args); //Outputs: [1, 2, 3, 4]
   return args.reduce((acc, current) => acc + current, 0);
@@ -167,7 +167,7 @@ Here, `...args` collects all arguments passed to the function into an array.
 
 You might want to log multiple values without knowing how many values you'll receive:
 
-```js
+```js showLineNumbers
 function logMessages(...messages: string[]): void {
   messages.forEach((message) => console.log(message));
 }
@@ -186,7 +186,7 @@ logMessages("Hello", "World", "This", "is", "a", "test");
 
 In React, the rest operator is useful when dealing with props, especially when you want to pass down some props to a child component while handling others separately:
 
-```tsx
+```tsx showLineNumbers
 import React, { InputHTMLAttributes } from "react";
 
 type InputProps = {
@@ -219,7 +219,7 @@ In this example, `...inputProps` collects all the remaining props passed to the 
 
 The rest operator can be used to collect the remaining elements of an array or properties of an object:
 
-```js
+```js showLineNumbers
 const [first, second, ...rest] = [1, 2, 3, 4, 5];
 console.log(rest); // Outputs: [3, 4, 5]
 
@@ -231,7 +231,7 @@ console.log(restObject); // Outputs: { c: 3, d: 4 }
 
 When working with component props, you might want to extract certain props and handle the rest:
 
-```js
+```js showLineNumbers
 import React, { HTMLProps } from "react";
 
 type CardProps = {

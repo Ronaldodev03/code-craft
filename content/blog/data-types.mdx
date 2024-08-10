@@ -15,45 +15,45 @@ Primitive data types are the most basic kinds of data in JavaScript. They are im
 
 1. **String**: Represents textual data.
 
-```js
+```js showLineNumbers
 const greeting = "Hello, World!";
 ```
 
 2. **Number**: Represents numeric values, both integers and floating points.
 
-```js
+```js showLineNumbers
 const age = 30;
 const price = 19.99;
 ```
 
 3. **BigInt**: Used for integers beyond the safe range of the `Number` type.
 
-```js
+```js showLineNumbers
 const bigIntValue = 123456789012345678901234567890n;
 ```
 
 4. **Boolean**: Represents true or false.
 
-```js
+```js showLineNumbers
 const isJavaScriptFun = true;
 ```
 
 5. **Undefined**: Indicates a variable that has been declared but not assigned a value.
 
-```js
+```js showLineNumbers
 let uninitialized;
 console.log(uninitialized); // Outputs: undefined
 ```
 
 6. **Null**: Represents the intentional absence of any object value.
 
-```js
+```js showLineNumbers
 const emptyValue = null;
 ```
 
 7. **Symbol**: A unique and immutable value often used as an identifier for object properties.
 
-```js
+```js showLineNumbers
 const uniqueKey = Symbol("key");
 ```
 
@@ -63,7 +63,7 @@ const uniqueKey = Symbol("key");
 
 - **Copying**: When you assign a primitive value to a new variable, a _copy_ of that value is made. This means changes to one variable do not affect the other.
 
-```js
+```js showLineNumbers
 let x = 10;
 let y = x;
 y = 20;
@@ -81,7 +81,7 @@ Non-primitive data types, also known as reference types, include objects, arrays
   Symbols) and the values can be any data type.
 </span>
 
-```js
+```js showLineNumbers
 const person = {
   name: "John",
   age: 30,
@@ -95,7 +95,7 @@ const person = {
   Arrays are ordered collections of values, which can be of any type.
 </span>
 
-```js
+```js showLineNumbers
 const numbers = [1, 2, 3, 4, 5];
 ```
 
@@ -106,7 +106,7 @@ const numbers = [1, 2, 3, 4, 5];
   variables, passed as arguments, and returned from other functions.
 </span>
 
-```js
+```js showLineNumbers
 function greet() {
   console.log("Hello!");
 }
@@ -116,7 +116,7 @@ function greet() {
 
 - **Mutability**: Non-primitive values can be modified after they are created. For example, you can add, change, or remove properties from an object or elements from an array.
 
-```js
+```js showLineNumbers
 const person = { name: "John", age: 30 };
 person.age = 31; // Modifies the existing object
 console.log(person.age); // Outputs: 31
@@ -124,7 +124,7 @@ console.log(person.age); // Outputs: 31
 
 - **Reference Copying**: When you assign a non-primitive value to a new variable, a reference to the same object in memory is copied, not the object itself. This means that changes to one variable will affect the other.
 
-```js
+```js showLineNumbers
 const originalArray = [1, 2, 3];
 const newArray = originalArray;
 newArray.push(4);
@@ -173,7 +173,7 @@ Understanding how JavaScript handles memory allocation for primitives and non-pr
 
 ## The Compile Phase and Variable Storage
 
-JavaScript is often considered an interpreted language, but modern JavaScript engines like V8 (used in Chrome and Node.js) actually compile JavaScript code before executing it. Here's what happens during the compile phase in relation to variable storage:
+JavaScript is often considered an interpreted language, but modern JavaScript engines like V8 (used in Chrome and Node.js showLineNumbers) actually compile JavaScript code before executing it. Here's what happens during the compile phase in relation to variable storage:
 
 ### Compile Phase
 
@@ -181,7 +181,7 @@ JavaScript is often considered an interpreted language, but modern JavaScript en
 
 2. **Hoisting**: Variables declared with `var` are hoisted to the top of their scope (either global or function scope), but they are initialized with `undefined`. Variables declared with `let` and `const` are also hoisted, but they remain uninitialized until the code execution reaches their declaration. This creates the **Temporal Dead Zone (TDZ)**, where accessing these variables before their declaration results in a `ReferenceError`.
 
-```js
+```js showLineNumbers
 console.log(varVariable); // Outputs: undefined
 console.log(letVariable); // ReferenceError: Cannot access 'letVariable' before initialization
 console.log(constVariable); // ReferenceError: Cannot access 'constVariable' before initialization
