@@ -1,0 +1,231 @@
+---
+#title: Understanding Dot Notation vs. Bracket Notation in JavaScript
+title: JavaScript Basics | Dot Notation vs. Bracket Notation
+description: Learn the differences between dot notation and bracket notation in JavaScript, how to use them, and when one might be more appropriate than the other.
+date: 2024-08-10
+tags: ["JavaScript", "objects", "syntax"]
+published: true
+---
+
+JavaScript objects are central to the language, and accessing their properties can be done using either dot notation or bracket notation. Understanding the differences between these two approaches, as well as their respective use cases, is essential for writing clean and functional code. This article explores both notations, providing examples and explaining when each should be used.
+
+## Dot Notation
+
+Dot notation is the most common and straightforward method for accessing object properties. It uses a dot (.) to separate the object from the property name.
+
+### Syntax
+
+```js showLineNumbers
+objectName.propertyName;
+```
+
+### Example
+
+```js showLineNumbers
+const car = {
+  make: "Toyota",
+  model: "Camry",
+  year: 2021,
+};
+
+console.log(car.make); // Outputs: Toyota
+console.log(car.year); // Outputs: 2021
+```
+
+### Key Characteristics of Dot Notation
+
+- **Simple and Readable**: Dot notation is concise and easy to read, making it the preferred method for most situations.
+- **Property Name Constraints**: The property name must be a valid JavaScript identifier. It cannot start with a number, contain spaces, or be a reserved word.
+
+```js showLineNumbers
+const person = {
+  firstName: "John",
+  lastName: "Doe",
+};
+
+// Valid with dot notation
+console.log(person.firstName); // Outputs: John
+
+// Invalid with dot notation
+// const obj = { "first name": "John" };
+// console.log(obj.first name); // SyntaxError: Unexpected identifier
+```
+
+## Bracket Notation
+
+Bracket notation offers more flexibility when accessing object properties, especially with dynamic keys or property names that are not valid JavaScript identifiers.
+
+### Syntax
+
+```js showLineNumbers
+objectName["propertyName"];
+```
+
+### Example
+
+```js showLineNumbers
+const car = {
+  make: "Toyota",
+  model: "Camry",
+  "year-made": 2021, // Property name with a dash
+};
+
+console.log(car["make"]); // Outputs: Toyota
+console.log(car["year-made"]); // Outputs: 2021
+```
+
+### Key Characteristics of Bracket Notation
+
+- **Dynamic Property Access**: Bracket notation allows you to use variables or expressions to access property names dynamically.
+
+```js showLineNumbers
+const property = "model";
+console.log(car[property]); // Outputs: Camry
+```
+
+- **Handles Special Characters**: Bracket notation can handle property names with special characters, spaces, or reserved words.
+
+```js showLineNumbers
+const obj = {
+  "first name": "John",
+  "age-group": "30-40",
+};
+
+console.log(obj["first name"]); // Outputs: John
+console.log(obj["age-group"]); // Outputs: 30-40
+```
+
+- **Useful in Loops and Functions**: Bracket notation is often used in loops or functions where the property name is not known beforehand.
+
+```js showLineNumbers
+const user = {
+  name: "Alice",
+  age: 28,
+  country: "USA",
+};
+
+for (let key in user) {
+  console.log(`${key}: ${user[key]}`);
+}
+// Outputs:
+// name: Alice
+// age: 28
+// country: USA
+```
+
+## Differences Between Dot Notation and Bracket Notation
+
+### Property Access
+
+Dot notation only allows static keys, meaning that the key must be typed directly in the code. Bracket notation, however, accepts dynamic keys, which means the key can be evaluated from an expression.
+
+#### Using Dot Notation:
+
+```js
+const obj = {
+  name: "deeecode",
+  age: 80,
+  language: "javascript",
+};
+
+const myKey = "language";
+
+const target = obj.myKey;
+// undefined
+```
+
+In this example, `myKey` is a variable containing the string `"language"`. Using dot notation (`obj.myKey`) attempts to access a property named `myKey`, not `language`. Since `myKey` does not exist as a property on obj, the result is `undefined`.
+
+#### Using Bracket Notation:
+
+```js showLineNumbers
+const obj = {
+  name: "deeecode",
+  age: 80,
+  language: "javascript",
+};
+
+const myKey = "language";
+
+const target = obj[myKey];
+// javascript
+```
+
+Here, `myKey` is used as an expression inside square brackets. This evaluates to `"language"`, which correctly accesses the `language` property on `obj`, returning `"javascript"`.
+
+### Modifying Properties
+
+#### Using Dot Notation:
+
+```js showLineNumbers
+const obj = {
+  name: "deeecode",
+  age: 80,
+  language: "javascript",
+};
+
+const myKey = "age";
+
+obj.myKey = 100;
+
+console.log(obj);
+// {
+//   name: "deeecode",
+//   age: 80,
+//   language: "javascript",
+//   myKey: 100
+// }
+```
+
+In this case, `obj.myKey` does not modify the `age` property but adds a new property named `myKey` with the value `100` because dot notation only accepts static keys.
+
+#### Using Bracket Notation:
+
+```js showLineNumbers
+const obj = {
+  name: "deeecode",
+  age: 80,
+  language: "javascript",
+};
+
+const myKey = "age";
+
+obj[myKey] = 100;
+
+console.log(obj);
+// {
+//   name: "deeecode",
+//   age: 100,
+//   language: "javascript"
+// }
+```
+
+Here, `obj[myKey]` modifies the `age` property because bracket notation evaluates the expression `myKey`, which equals `"age"`, thereby updating the existing property.
+
+#### Adding New Properties:
+
+```js showLineNumbers
+const obj = {
+  name: "deeecode",
+  age: 80,
+  language: "javascript",
+};
+
+const myKey = "location";
+
+obj[myKey] = "Mercury";
+
+console.log(obj);
+// {
+//   name: "deeecode",
+//   age: 80,
+//   language: "javascript",
+//   location: "Mercury"
+// }
+```
+
+In this example, `obj[myKey]` creates a new property `location` with the value `"Mercury"` because `myKey` evaluates to `"location"`, a new key that does not previously exist on `obj`.
+
+## Conclusion
+
+Understanding the differences between dot notation and bracket notation is crucial for effective JavaScript programming. Dot notation is straightforward and ideal for accessing properties with known names, while bracket notation provides flexibility for dynamic property names and special characters. By choosing the appropriate notation for your use case, you can write more efficient and maintainable code.
