@@ -1,0 +1,115 @@
+---
+#title: Handling Form Data and Sending It to the Server in JavaScript
+title: JavaScript Basics | From Form to Server with Fetch
+description: Learn the complete process of collecting form data, transforming it, and sending it to a server using fetch, FormData, Object.fromEntries, and JSON.stringify, using examples with React and TypeScript.
+date: 2024-08-10
+tags: ["JavaScript", "forms", "fetch", "API", "React", "TypeScript"]
+published: true
+---
+
+Handling form data in JavaScript involves several steps, from collecting the data entered by the user to sending it to the server. In this article, we will explore how to achieve this flow using `FormData`, `Object.fromEntries`, `JSON.stringify`, and the `fetch` API. We will also provide examples using React and TypeScript.
+
+### React and TypeScript Example
+
+```tsx showLineNumbers
+import React, { useState } from "react";
+
+type FormData = {
+  name: string;
+  email: string;
+};
+
+const MyForm = () => {
+  const [formData, setFormData] = useState < FormData > { name: "", email: "" };
+
+  /*------- function for the inputs -------*/
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target; //here we are using destructuring.
+    setFormData((prevState) => ({
+      ...prevState, // here we are using spread operator to create a copy of the original state.
+      [name]: value, //here `[name]` is a computed property name  using ES6 enhanced object literal.
+    }));
+  };
+  /*--------------------------------------*/
+
+  /*------- function for submiting -------*/
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    //aca tenemos la formData como objeto porque viene del estado, pero si estuviesemos usando remix, tendriamos que user el .fromEntries() para llevar a formato de objeto.
+    console.log(formData); // Outputs: {name: "ro", email: "ro@ro.ro"} --> coming from the state
+
+    //------------------START| This step is not necessary------------------//
+    const formData2 = new FormData(formData); // Create a FormData object from the form
+
+    //aca si imprimo formData directamente (en lugar de [...formData2.entries()]) obtendre algo como "[object FormData] o FormData {}"
+    //aca si imprimo formData.entries() (en lugar de [...formData2.entries()]) obtendre es algo como Iterator {}"
+    // aunque en REMIX imprimí el formData y me mando un array cuyos elemntos eran objetos, y los objetos eran key value de las inputs
+    console.log([...formData2.entries()]); // Outputs: [['name', 'ro'], ['email', 'ro@ro.ro']]
+
+    const data = Object.fromEntries(formData2.entries());
+
+    console.log(data); // Outputs: {name: "ro", email: "ro@ro.ro"}
+    //------------------END| This step is not necessary------------------//
+
+    await sendDataToServer(formData); // Send the formData object to the server
+  };
+  /*--------------------------------------*/
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="name">Name:</label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        value={formData.name}
+        onChange={handleChange}
+        required
+      />
+
+      <label htmlFor="email">Email:</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        value={formData.email}
+        onChange={handleChange}
+        required
+      />
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+
+// Function to send data to the server
+const sendDataToServer = async (data: FormData) => {
+  const jsonData = JSON.stringify(data);
+
+  try {
+    const response = await fetch("https://example.com/api/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json", // Tell the server we are sending JSON data
+      },
+      body: jsonData, // Send the JSON data as the request body
+    });
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    const result = await response.json(); // Parse JSON response
+    console.log(result);
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+  }
+};
+
+export default MyForm;
+```
+
+## Conclusion
+
+insert text here

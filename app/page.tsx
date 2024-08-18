@@ -8,6 +8,7 @@ import Image from "next/image";
 
 export default function Home() {
   const latestPosts = sortPosts(posts).slice(0, 5);
+
   return (
     <>
       <section className=" h-screen flex justify-center items-center -mt-14 ">

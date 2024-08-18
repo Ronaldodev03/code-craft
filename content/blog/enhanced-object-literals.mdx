@@ -1,0 +1,89 @@
+---
+#title: Understanding Enhanced Object Literals in JavaScript
+title: JavaScript Basics | Enhanced Object Literals
+description: Explore enhanced object literals in JavaScript, which simplify object creation and improve code readability with features like shorthand property names, computed property names, method definitions, and more.
+date: 2024-08-07
+tags: ["JavaScript", "objects", "ES6"]
+published: true
+---
+
+Enhanced object literals, introduced in ECMAScript 6 (ES6), offer a more concise and expressive way to define objects in JavaScript. These enhancements streamline object creation and improve code readability by reducing redundancy and adding powerful new features. This article covers the key features of enhanced object literals and provides practical examples.
+
+## Key Features of Enhanced Object Literals
+
+### 1. Shorthand Property Names
+
+With enhanced object literals, you can use shorthand notation for properties when the property name matches the variable name.
+
+#### Example
+
+```js showLineNumbers
+const name = "Alice";
+const age = 30;
+
+const person = {
+  name, // Equivalent to name: name
+  age, // Equivalent to age: age
+};
+
+console.log(person);
+// Outputs: { name: 'Alice', age: 30 }
+```
+
+### 2. Method Definitions
+
+You can define methods directly in objects using a more concise syntax.
+
+#### Example
+
+```js showLineNumbers
+const person = {
+  name: "Bob",
+  greet() {
+    console.log(`Hello, my name is ${this.name}`);
+  },
+};
+
+person.greet();
+// Outputs: Hello, my name is Bob
+```
+
+### 3. Computed Property Names
+
+You can use expressions within square brackets to define property names dynamically.
+
+#### Example
+
+```js showLineNumbers
+const key = "dynamicKey";
+
+const obj = {
+  [key]: "This is a dynamic property",
+};
+
+console.log(obj.dynamicKey);
+// Outputs: This is a dynamic property
+```
+
+### 4. Object Destructuring with Default Values
+
+You can destructure objects with default values, which helps in handling missing properties.
+
+#### Example
+
+```js showLineNumbers
+const user = {
+  name: "Charlie",
+  age: 40,
+};
+
+const { name, age, country = "Unknown" } = user;
+
+console.log(name); // Outputs: Charlie
+console.log(age); // Outputs: 40
+console.log(country); // Outputs: Unknown
+```
+
+## Conclusion
+
+Enhanced object literals provide a more concise and expressive way to define and work with objects in JavaScript. By utilizing shorthand property names, method definitions, computed property names, and other features, you can write cleaner and more readable code. Understanding these enhancements helps in leveraging modern JavaScript features and improving overall code efficiency.
