@@ -146,9 +146,11 @@ numbers.forEach((num) => console.log(num));
 // 3
 ```
 
-### 10, `entries()`
+### 10. `entries()`
 
 The `entries()` method returns a new Array Iterator object that contains the key/value pairs for each index in the array.
+
+#### example
 
 ```js showLineNumbers
 const numbers = ["a", "b", "c"];
@@ -161,6 +163,73 @@ for (const [index, value] of iterator) {
 // 0 "a"
 // 1 "b"
 // 2 "c"
+```
+
+### 11. `from()`
+
+The `from()` method creates a new, shallow-copied Array instance from an array-like or iterable object.
+
+#### Example 1: Converting a Set to an Array
+
+```js showLineNumbers
+const set = new Set(["a", "b", "c"]);
+const arrayFromSet = Array.from(set);
+console.log(arrayFromSet); // Outputs: ["a", "b", "c"]
+```
+
+#### Example 2: Converting a String to an Array of Characters
+
+```js showLineNumbers
+const str = "hello";
+const arrayFromString = Array.from(str);
+console.log(arrayFromString); // Outputs: ["h", "e", "l", "l", "o"]
+```
+
+#### Example 3: Using a Map to Create an Array
+
+```js showLineNumbers
+const map = new Map([
+  ["key1", "value1"],
+  ["key2", "value2"],
+]);
+const arrayFromMap = Array.from(map);
+console.log(arrayFromMap); // Outputs: [["key1", "value1"], ["key2", "value2"]]
+```
+
+#### Example 4: Applying a Mapping Function with `Array.from()`
+
+```js showLineNumbers
+const numbers = [1, 2, 3, 4];
+const doubled = Array.from(numbers, (num) => num * 2);
+console.log(doubled); // Outputs: [2, 4, 6, 8]
+```
+
+#### Example 5: Converting an Array-like Object with Gaps to an Array
+
+```js showLineNumbers
+const arrayLike = { 0: "a", 2: "b", length: 3 };
+const arrayFromArrayLike = Array.from(arrayLike);
+console.log(arrayFromArrayLike); // Outputs: ["a", undefined, "b"]
+```
+
+#### Example 6: Creating an Array with `Array.from()` and a Generator
+
+```js showLineNumbers
+const range = (start, end) =>
+  Array.from({ length: end - start }, (_, i) => i + start);
+console.log(range(1, 5)); // Outputs: [1, 2, 3, 4]
+```
+
+### 12. `fill()`
+
+The `fill()` method fills all the elements of an array from a start index to an end index with a static value.
+
+#### Example:
+
+```js showLineNumbers
+const numbers = [1, 2, 3, 4];
+numbers.fill(0, 2, 4);
+console.log(numbers); // Outputs: [1, 2, 0, 0]
 ```
 
 ### Using `for...of` with Arrays

@@ -23,7 +23,7 @@ const userMap = new Map([
   ["country", "Colombia"],
 ]);
 
-console.log(userMap);
+console.log(userMap); //Outputs: Map(3) { 'name' => 'Robert', 'age' => 30, 'country' => 'Colombia' }
 ```
 
 ### Adding Elements to a Map
@@ -67,6 +67,10 @@ Maps are iterable, and you can loop through them using `for...of`:
 for (const [key, value] of userMap) {
   console.log(`${key}: ${value}`);
 }
+// Outputs:
+// name: Robert
+// age: 30
+// country: Colombia
 ```
 
 ## What Are Sets?
@@ -117,6 +121,11 @@ Sets are also iterable, and you can loop through them using `for...of`:
 for (const value of numberSet) {
   console.log(value);
 }
+// Outputs
+// 2
+// 3
+// 4
+// 5
 ```
 
 ## Key Differences Between Maps and Sets
