@@ -195,6 +195,12 @@ type InputProps = {
 
 const Input = ({ label, ...inputProps }: InputProps) => {
   console.log(inputProps); // Outputs: {type: "text", placeholder: "Enter your name"}
+
+  /* const Input = (props: InputProps) => {
+   {label, ...inputProps} = props 
+  console.log(inputProps); // Outputs: {type: "text", placeholder: "Enter your name"} */
+  // NOTE: we could have made the destructuring like that, due to `props` is an object, but generally we do it as done in line 7.
+
   return (
     <div>
       <label>{label}</label>
