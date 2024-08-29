@@ -1,0 +1,493 @@
+---
+title: Mastering TypeScript with React | Typing States, Arrays, and More
+description: Learn how to effectively use TypeScript with React, including typing states, arrays, using Record and Partial, combining types, and creating type subsets.
+date: 2024-08-28
+tags: ["TypeScript", "React"]
+published: true
+---
+
+TypeScript is a powerful addition to React applications, enabling developers to catch errors early and create more reliable codebases. This article will explore how to use TypeScript effectively with React, focusing on typing states, arrays, using Record and Partial, combining types, and creating subsets of types. We'll walk through practical examples and best practices for leveraging TypeScript to enhance your React projects.
+
+## Typing States in React
+
+One of the core features of React is state management, and TypeScript makes it easy to ensure your state types are consistent and well-defined.
+
+### Typing Primitive States
+
+For simple state types, such as numbers or strings, you can provide the type directly to the `useState` hook:
+
+```ts showLineNumbers
+import React, { useState } from "react";
+
+function Counter() {
+  // Typing state as a number
+  const [count, setCount] = useState < number > 0;
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+    </div>
+  );
+}
+```
+
+### Typing Object States
+
+For more complex states, such as objects, defining an interface or type can provide better structure and clarity.
+
+```ts showLineNumbers
+import React, { useState } from "react";
+
+// Define a type for the state
+type User = {
+  name: string;
+  age: number;
+  email: string;
+};
+
+function UserProfile() {
+  const [user, setUser] = useState<User>({
+    name: "John Doe",
+    age: 30,
+    email: "john@example.com",
+  });
+
+  return (
+    <div>
+      <p>Name: {user.name}</p>
+      <p>Age: {user.age}</p>
+      <p>Email: {user.email}</p>
+    </div>
+  );
+}
+```
+
+## Typing Arrays in React
+
+Arrays are a common data structure in React applications, especially when dealing with lists of items. TypeScript allows you to define the type of elements within an array, ensuring type safety and preventing common errors.
+
+### Typing Arrays with Primitive Types
+
+To type an array of primitive types, such as strings or numbers, you can use the generic `Array<T>` syntax or the shorthand `T[]`.
+
+```ts showLineNumbers
+import React, { useState } from "react";
+
+function StringList() {
+  const [items, setItems] = useState<string[]>(["Item 1", "Item 2", "Item 3"]);
+
+  const addItem = (item: string) => {
+    setItems([...items, item]);
+  };
+
+  return (
+    <div>
+      <ul>
+        {items.map((item, index) => (
+          <li key={index}>{item}</li>
+        ))}
+      </ul>
+      <button onClick={() => addItem("New Item")}>Add Item</button>
+    </div>
+  );
+}
+```
+
+### Typing Arrays with Objects
+
+When dealing with arrays of objects, you can define an interface or type for the objects within the array.
+
+```ts showLineNumbers
+import React, { useState } from "react";
+
+type Task = {
+  id: number;
+  description: string;
+  completed: boolean;
+};
+
+function TaskList() {
+  const [tasks, setTasks] = useState<Task[]>([
+    { id: 1, description: "Learn TypeScript", completed: false },
+    { id: 2, description: "Build a React app", completed: true },
+  ]);
+
+  return (
+    <div>
+      <ul>
+        {tasks.map((task) => (
+          <li key={task.id}>
+            {task.description} - {task.completed ? "Completed" : "Pending"}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## Using Combined Types
+
+TypeScript allows you to create complex types by combining multiple types. This is particularly useful when working with APIs or complex data structures.
+
+### Example of a Combined Type
+
+Suppose you have a schema that defines different user types and you want to create a combined type that represents either of these user types.
+
+```ts showLineNumbers
+type TUsersSchema = {
+  titulars: {
+    juridical: { name: string; companyName: string }[];
+    physical: { name: string; surname: string; age: number }[];
+  };
+};
+
+// Combined type representing an entry that could be either a juridical or physical person
+type Entry =
+  | TUsersSchema["titulars"]["juridical"][number]
+  | TUsersSchema["titulars"]["physical"][number];
+
+// Function to process a single entry
+const processEntry = (entry: Entry) => {
+  if ("companyName" in entry) {
+    console.log(`Processing company: ${entry.companyName}`);
+  } else {
+    console.log(
+      `Processing individual: ${entry.name} ${entry.surname}, age: ${entry.age}`
+    );
+  }
+};
+
+// Function to format an array of entries
+const formatEntries = (
+  entries: Entry[]
+): Array<{ type: string; info: string }> => {
+  return entries.map((entry) => {
+    if ("companyName" in entry) {
+      // Formatting for juridical persons
+      return {
+        type: "juridical",
+        info: `Company: ${entry.companyName}, Contact: ${entry.name}`,
+      };
+    } else {
+      // Formatting for physical persons
+      return {
+        type: "physical",
+        info: `Name: ${entry.name} ${entry.surname}, Age: ${entry.age}`,
+      };
+    }
+  });
+};
+
+// Sample data
+const users: TUsersSchema = {
+  titulars: {
+    juridical: [
+      { name: "John Smith", companyName: "TechCorp Inc." },
+      { name: "Jane Doe", companyName: "Innovate LLC" },
+    ],
+    physical: [
+      { name: "Alice", surname: "Johnson", age: 28 },
+      { name: "Bob", surname: "Brown", age: 35 },
+    ],
+  },
+};
+
+// Create a combined array of juridical and physical entries
+const combinedEntries: Entry[] = [
+  ...users.titulars.juridical,
+  ...users.titulars.physical,
+];
+
+// Process and format entries
+combinedEntries.forEach(processEntry);
+const formattedEntries = formatEntries(combinedEntries);
+
+console.log(formattedEntries);
+// Output:
+// [
+//   { type: "juridical", info: "Company: TechCorp Inc., Contact: John Smith" },
+//   { type: "juridical", info: "Company: Innovate LLC, Contact: Jane Doe" },
+//   { type: "physical", info: "Name: Alice Johnson, Age: 28" },
+//   { type: "physical", info: "Name: Bob Brown, Age: 35" }
+// ]
+```
+
+In this example, `Entry` is a combined type that can be either a juridical or a physical person from the schema. This allows us to write functions that can handle both types seamlessly, with TypeScript ensuring that the properties of each type are accessed correctly.
+
+## Typing Complex State with Arrays
+
+You can also type complex state that involves arrays of specific values or objects. This is especially useful when you have predefined types for array elements.
+
+### Example of Typing a State with Specific Array Values
+
+Let's consider a scenario where you want to maintain an array of states representing different types of "apoderate" (representatives) that can be either physical or juridical.
+
+```ts showLineNumbers
+import React, { useState } from "react";
+
+// State type representing different types of "apoderate"
+const [personApoderateTypes, setPersonApoderateTypes] = useState<
+  Array<"apoderate-physic" | "apoderate-juridic" | null>
+>(Array(5).fill(null));
+
+// Update function for the state
+const updateApoderateType = (
+  index: number,
+  type: "apoderate-physic" | "apoderate-juridic" | null
+) => {
+  setPersonApoderateTypes((prevTypes) =>
+    prevTypes.map((t, i) => (i === index ? type : t))
+  );
+};
+```
+
+In this example, the state `personApoderateTypes` is an array that can hold specific string values or `null`. The `updateApoderateType` function allows us to update a specific index of the state array, ensuring that only the allowed types or `null` can be assigned.
+
+## Using `Record` to Type States
+
+`Record` is a TypeScript utility type that represents an object type with specific keys and values. It's useful when you have a dynamic state structure where keys are known, but values are of a specific type.
+
+```ts showLineNumbers
+import React, { useState } from "react";
+
+// Using Record to type a state with dynamic keys and boolean values
+const [formStatus, setFormStatus] = useState<Record<number, boolean>>({});
+// const [formStatus, setFormStatus]= useState<{ [key: number]: boolean }>({}); <-- this is equivalent
+
+const updateFormStatus = (formIndex: number, status: boolean) => {
+  setFormStatus((prevStatus) => ({
+    ...prevStatus,
+    [formIndex]: status,
+  }));
+};
+```
+
+## Using `Partial` for Optional Properties
+
+`Partial` is another TypeScript utility type that makes all properties of a type optional. It's useful when dealing with forms or objects where all fields are not required upfront.
+
+```ts showLineNumbers
+import React, { useState } from "react";
+
+// Define a type for a complex object
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  description?: string;
+};
+
+// Using Partial to make all fields optional in the state
+const [product, setProduct] = useState < Partial < Product >> {};
+
+// Update function to handle partial updates
+const updateProduct = (updatedFields: Partial<Product>) => {
+  setProduct((prevProduct) => ({ ...prevProduct, ...updatedFields }));
+};
+```
+
+## Combining Types
+
+TypeScript allows you to combine types using intersection (`&`) and union (`|`) operators. This is useful when a component or a function needs to handle multiple types or a combination of types.
+
+### Using Intersection Types
+
+Intersection types are used when you want an object to have all the properties of multiple types.
+
+```ts showLineNumbers
+type Address = {
+  street: string;
+  city: string;
+};
+
+type Contact = {
+  email: string;
+  phone: string;
+};
+
+// Combining types using Intersection
+type User = Address & Contact;
+
+const user: User = {
+  street: "123 Main St",
+  city: "Anytown",
+  email: "john@example.com",
+  phone: "123-456-7890",
+};
+```
+
+## Using Union Types
+
+Union types are used when a variable or parameter can be of multiple types.
+
+```ts showLineNumbers
+type LoadingState = "loading" | "success" | "error";
+
+const [status, setStatus] = useState < LoadingState > "loading";
+
+const handleClick = () => {
+  setStatus("success"); // Can be "loading", "success", or "error"
+};
+```
+
+## Creating Subsets of Types
+
+Sometimes, you may want to create a subset of a type for more specialized use cases. TypeScript's utility types like `Pick` and `Omit` help in such cases.
+
+### Using `Pick`
+
+`Pick` creates a new type by picking a set of properties from an existing type.
+
+```ts showLineNumbers
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  age: number;
+};
+
+// Creating a new type with only selected properties
+type UserProfile = Pick<User, "name" | "email">;
+
+const userProfile: UserProfile = {
+  name: "Jane Doe",
+  email: "jane@example.com",
+};
+```
+
+### Using `Omit`
+
+`Omit` creates a new type by omitting a set of properties from an existing type.
+
+```ts showLineNumbers
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  age: number;
+};
+
+// Creating a new type without the "id" property
+type UserWithoutId = Omit<User, "id">;
+
+const userWithoutId: UserWithoutId = {
+  name: "Jane Doe",
+  email: "jane@example.com",
+  age: 25,
+};
+```
+
+## Practical Examples
+
+### Example 1: Managing Complex Form States
+
+Using TypeScript with React can significantly enhance how you manage form states by providing precise typing.
+
+```ts showLineNumbers
+import React, { useState } from "react";
+
+type FormData = {
+  firstName: string;
+  lastName: string;
+  age?: number;
+};
+
+function FormComponent() {
+  const [formData, setFormData] = useState < Partial < FormData >> {};
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  return (
+    <form>
+      <input name="firstName" onChange={handleChange} />
+      <input name="lastName" onChange={handleChange} />
+    </form>
+  );
+}
+```
+
+### Example 2: Using Subsets of Types
+
+In larger applications, you may have several components that need only a subset of a type's properties. Using `Pick` and `Omit` can make your components more reusable and type-safe.
+
+```ts showLineNumbers
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  age: number;
+};
+
+type UserDisplayProps = Pick<User, "name" | "email">;
+
+const UserDisplay: React.FC<UserDisplayProps> = ({ name, email }) => (
+  <div>
+    <p>Name: {name}</p>
+    <p>Email: {email}</p>
+  </div>
+);
+```
+
+### Example 3: Handling Arrays of Complex Types
+
+Let's say you're building a to-do list application where each to-do item has a complex structure. Typing these arrays ensures that each item conforms to the structure defined by a type.
+
+```ts showLineNumbers
+type Todo = {
+  id: number;
+  title: string;
+  completed: boolean;
+  details?: string;
+};
+
+function TodoList() {
+  const [todos, setTodos] = useState<Todo[]>([
+    { id: 1, title: "Learn TypeScript", completed: false },
+    {
+      id: 2,
+      title: "Build a To-Do App",
+      completed: false,
+      details: "Include TypeScript types",
+    },
+  ]);
+
+  const toggleTodoCompletion = (id: number) => {
+    setTodos((prevTodos) =>
+      prevTodos.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  };
+
+  return (
+    <div>
+      <ul>
+        {todos.map((todo) => (
+          <li key={todo.id}>
+            {todo.title} - {todo.completed ? "Completed" : "Pending"}
+            <button onClick={() => toggleTodoCompletion(todo.id)}>
+              Toggle
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## Conclusion
+
+Using TypeScript with React provides a robust framework for building reliable and scalable applications. By mastering state typing, array handling, utilizing utility types like `Record`, `Partial`, `Pick`, and `Omit`, and effectively combining types, you can enhance your development process and code quality.
+
+TypeScript's strong typing and utility types allow developers to handle complex states, manage dynamic object keys, build flexible components, and ensure type safety. Applying these concepts in your projects will enable you to write more maintainable and less error-prone React applications.
+
+By understanding and leveraging TypeScript’s capabilities, you can unlock a new level of productivity and confidence in your React applications, ensuring both development speed and code robustness.
