@@ -1,13 +1,15 @@
 ---
 #title: Understanding Dot Notation vs. Bracket Notation in JavaScript
 title: JavaScript Basics | Dot Notation vs. Bracket Notation
-description: Learn the differences between dot notation and bracket notation in JavaScript, how to use them, and when one might be more appropriate than the other.
+description: Learn about dot notation and bracket notation in JavaScript for accessing object properties. Discover their key differences, use cases, and how to leverage bracket notation for dynamic property access, including an advanced example using React and TypeScript to dynamically manage form state and validation.
 date: 2024-08-6
-tags: ["JavaScript", "objects"]
+tags: ["JavaScript", "objects", "TS", "React"]
 published: true
 ---
 
-JavaScript objects are central to the language, and accessing their properties can be done using either dot notation or bracket notation. Understanding the differences between these two approaches, as well as their respective use cases, is essential for writing clean and functional code. This article explores both notations, providing examples and explaining when each should be used.
+JavaScript objects are a fundamental aspect of the language, and there are two primary ways to access their properties: dot notation and bracket notation. Dot notation provides a clean and simple syntax for accessing properties with known names, while bracket notation offers more flexibility, especially when dealing with dynamic keys or property names that include special characters.
+
+In this article, we will explore the differences between dot notation and bracket notation, provide detailed examples of their use, and demonstrate how bracket notation can be particularly useful in dynamic scenarios. We'll also dive into an advanced example using React and TypeScript, where we dynamically manage form inputs and validation using computed property names, showcasing the power and flexibility of bracket notation in modern web development.
 
 ## Dot Notation
 
@@ -225,6 +227,103 @@ console.log(obj);
 ```
 
 In this example, `obj[myKey]` creates a new property `location` with the value `"Mercury"` because `myKey` evaluates to `"location"`, a new key that does not previously exist on `obj`.
+
+## Example: Computed Property Names in React with TypeScript
+
+In a React + TypeScript application, using computed property names can help manage form state and errors dynamically, especially when dealing with a list of inputs where the names aren't known ahead of time.
+
+Let's create a React component that dynamically renders a list of file inputs. We'll also validate each input and display error messages using computed property names.
+
+```ts
+import React, { useState } from "react";
+
+// Define a type for form input configuration
+type FormInput = {
+  label: string;
+  name: string;
+};
+
+// Define a type for error messages
+type Errors = {
+  [key: string]: { message: string };
+};
+
+const DynamicForm: React.FC = () => {
+  const [errors, setErrors] = useState<Errors>({}); // State to store errors dynamically
+
+  const formInputs: FormInput[] = [
+    { label: "DNI", name: "dni" },
+    { label: "CIF", name: "cif" },
+    { label: "LEI CODE", name: "lei_code" },
+  ];
+
+  // Function to validate files and set errors dynamically
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, files } = event.target;
+    let newErrors = { ...errors }; // Create a copy of the current errors
+
+    // Simple validation example: check if file is present
+    if (!files || files.length === 0) {
+      newErrors[name] = { message: "File is required." };
+    } else {
+      delete newErrors[name]; // Remove the error if validation passes
+    }
+
+    setErrors(newErrors); // Update the errors state
+  };
+
+  return (
+    <div>
+      {formInputs.map((input) => {
+        const name = input.name;
+        return (
+          <div key={name} className="mb-4">
+            <label className="block font-medium" htmlFor={name}>
+              {input.label}:
+            </label>
+            <div>
+              <input
+                type="file"
+                id={name}
+                name={name}
+                className="input-field"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={handleFileChange}
+              />
+              {errors[name] && (
+                <p className="text-red-600 text-xs">{errors[name].message}</p>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+export default DynamicForm;
+```
+
+### Explanation
+
+#### 1. Type Definitions:
+
+- **`FormInput`**: A type that defines the structure of each form input configuration, which includes a `label` and `name`.
+- **`Errors`**: A type that represents the structure of the errors object. It uses an index signature (`[key: string]`) to indicate that the keys are dynamic and each key maps to an object with a `message` string.
+
+#### 2. State Management:
+
+- The `errors` state is defined with the `Errors` type, ensuring that each entry in the `errors` object conforms to the expected structure.
+
+#### 3. Event Handling with TypeScript:
+
+- The `handleFileChange` function specifies its parameter type as `React.ChangeEvent<HTMLInputElement>`, ensuring that TypeScript understands the event is from an HTML input element, particularly a file input.
+
+#### 4. Dynamic Rendering and Error Display:
+
+- The component dynamically generates input fields using the `formInputs` array and checks the `errors` state for any validation messages to display below each input.
+
+This approach is very flexible and allows for dynamic handling of form inputs and their validation in a React component.
 
 ## Conclusion
 
