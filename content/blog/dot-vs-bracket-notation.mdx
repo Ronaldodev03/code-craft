@@ -7,9 +7,7 @@ tags: ["JavaScript", "objects", "TS", "React"]
 published: true
 ---
 
-JavaScript objects are a fundamental aspect of the language, and there are two primary ways to access their properties: dot notation and bracket notation. Dot notation provides a clean and simple syntax for accessing properties with known names, while bracket notation offers more flexibility, especially when dealing with dynamic keys or property names that include special characters.
-
-In this article, we will explore the differences between dot notation and bracket notation, provide detailed examples of their use, and demonstrate how bracket notation can be particularly useful in dynamic scenarios. We'll also dive into an advanced example using React and TypeScript, where we dynamically manage form inputs and validation using computed property names, showcasing the power and flexibility of bracket notation in modern web development.
+JavaScript objects are a fundamental aspect of the language, and there are two primary ways to access their properties: dot notation and bracket notation. In this article, we will explore the differences between dot notation and bracket notation, provide detailed examples of their use, and demonstrate how bracket notation can be particularly useful in dynamic scenarios. We'll also dive into an advanced example using React and TypeScript.
 
 ## Dot Notation
 
@@ -234,7 +232,7 @@ In a React + TypeScript application, using computed property names can help mana
 
 Let's create a React component that dynamically renders a list of file inputs. We'll also validate each input and display error messages using computed property names.
 
-```ts
+```ts showLineNumbers
 import React, { useState } from "react";
 
 // Define a type for form input configuration
