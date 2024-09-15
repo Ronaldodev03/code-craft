@@ -40,8 +40,14 @@ export function getAllTags(posts: Array<Post>) {
 
 //how?
 export function sortTagsByCount(tags: Record<string, number>) {
-  return Object.keys(tags).sort((a, b) => tags[b] - tags[a]);
+  console.log(tags);
+  console.log(Object.keys(tags).sort((a, b) => tags[b] - tags[a]));
+  return Object.keys(tags).sort((a, b) => {
+    console.log(a, b);
+    return tags[b] - tags[a];
+  });
 }
+
 //how?
 export function getPostsByTagSlug(posts: Array<Post>, tag: string) {
   return posts.filter((post) => {

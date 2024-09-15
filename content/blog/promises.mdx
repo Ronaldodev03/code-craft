@@ -121,6 +121,93 @@ Promise.all(promises)
 // Error fetching data: Data fetch failed // If any fetch operation fails
 ```
 
+## Running Promises in Parallel with Async/Await
+
+Using `Promise.all()` with `async/await` allows us to run multiple asynchronous operations in parallel while handling them within a `try/catch` block. This is useful when you need to wait for multiple operations but don't want them to run sequentially.
+
+Here’s a practical example:
+
+```js showLineNumbers
+function fetchData1() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve("Data from fetchData1");
+    }, 1000);
+  });
+}
+
+function fetchData2() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve("Data from fetchData2");
+    }, 1500);
+  });
+}
+
+function fetchData3() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve("Data from fetchData3");
+    }, 2000);
+  });
+}
+
+async function fetchAllData() {
+  try {
+    const [data1, data2, data3] = await Promise.all([
+      fetchData1(),
+      fetchData2(),
+      fetchData3(),
+    ]);
+    console.log("All data fetched:");
+    console.log("Data 1:", data1);
+    console.log("Data 2:", data2);
+    console.log("Data 3:", data3);
+  } catch (error) {
+    console.error("An error occurred while fetching data:", error);
+  }
+}
+
+fetchAllData();
+
+// output:
+// Data 1: Data from fetchData1
+// Data 2: Data from fetchData2
+// Data 3: Data from fetchData3
+```
+
+In the example above, the `Promise.all()` method is used to wait for all the promises to resolve in parallel. If any of the promises reject, the `catch` block will handle the error.
+
+### Sequential vs Parallel Execution
+
+If you want the asynchronous functions to execute one after another (sequentially), you can simply `await` each function call individually:
+
+```js showLineNumbers
+async function fetchSequentialData() {
+  try {
+    const data1 = await fetchData1();
+    console.log("Data 1:", data1);
+
+    const data2 = await fetchData2();
+    console.log("Data 2:", data2);
+
+    const data3 = await fetchData3();
+    console.log("Data 3:", data3);
+  } catch (error) {
+    console.error("An error occurred:", error);
+  }
+}
+
+fetchSequentialData();
+
+// output (after each function completes):
+// Data 1: Data from fetchData1
+// Data 2: Data from fetchData2
+// Data 3: Data from fetchData3
+```
+
+In this case, each fetch operation is awaited one by one, which means they will run sequentially. This approach might be useful when you need the result of one operation before proceeding to the next.
+
 ## Conclusion
 
 Promises are a fundamental part of modern JavaScript asynchronous programming, offering a cleaner alternative to callback-based approaches. By understanding and mastering Promises, developers can write more readable, maintainable, and efficient code. Embracing async/await syntax further enhances the readability and error-handling capabilities of asynchronous operations in JavaScript.

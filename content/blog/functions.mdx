@@ -1,0 +1,463 @@
+---
+title: JavaScript Essentials | Functions, Types of Functions, `this` Keyword, and Method Binding
+description: Learn the fundamentals of JavaScript functions, explore the differences between regular and arrow functions, and discover how the `this` keyword behaves in different contexts. Practical examples included to illustrate the behavior of `this`, argument handling in functions and Method Binding.
+date: 2024-08-14
+tags: ["JavaScript", "functions", "this"]
+published: true
+---
+
+Functions are a core aspect of JavaScript, allowing for code reusability, modularity, and separation of concerns. However, understanding the nuances of how functions operate in JavaScript, particularly with the `this` keyword, different function types, and method binding (`call`, `apply`, `bind`), is crucial for mastering JavaScript. Let's explore these concepts step-by-step.
+
+## Types of Functions in JavaScript
+
+JavaScript supports different ways to define and use functions. The most common ones include:
+
+1. Function Declarations
+2. Function Expressions
+3. Arrow Functions (ES6)
+
+Let's go over each type and examine how they work.
+
+### Function Declarations
+
+Function declarations are the most traditional way of defining a function. A function declaration is hoisted, meaning you can call the function before it appears in the code.
+
+```js showLineNumbers
+greet(); // Outputs: Hello, World! --> Works due to hoisting
+
+function greet() {
+  console.log("Hello, World!");
+}
+```
+
+### Function Expressions
+
+In a function expression, the function is assigned to a variable. These functions are not hoisted, meaning you can’t call them before they are defined in the code.
+
+```js showLineNumbers
+const greet = function () {
+  console.log("Hello from function expression!");
+};
+
+greet(); // Outputs: Hello from function expression!
+```
+
+### Arrow Functions (ES6)
+
+Introduced in ES6, arrow functions provide a more concise syntax. However, they come with specific behaviors, particularly in how they handle the `this` keyword.
+
+```js showLineNumbers
+const greet = () => console.log("Hello from arrow function!");
+
+greet(); // Outputs: Hello from arrow function!
+```
+
+Arrow functions don’t get their own `this` keyword. Instead, they inherit `this` from their lexical scope.
+
+## The `this` Keyword in JavaScript
+
+The value of `this` in JavaScript depends on how a function is called:
+
+- **Global Context**: In the global execution context (outside of any function), `this` refers to the global object (`window` in browsers).
+
+```js showLineNumbers
+console.log(this); // Outputs: global object (e.g., Window in browsers)
+```
+
+- **Object Method**: When a function is called as a method of an object, `this` is set to the object the method is called on.
+
+```js showLineNumbers
+const jonas = {
+  year: 1991,
+  calcAge: function () {
+    console.log(this); // Outputs: the `jonas` object
+    console.log(2037 - this.year); // Outputs: 46
+  },
+};
+jonas.calcAge();
+```
+
+If the method is assigned to another object, `this` will refer to the new object.
+
+```js showLineNumbers
+const matilda = {
+  year: 2017,
+};
+
+matilda.calcAge = jonas.calcAge;
+matilda.calcAge(); // Outputs: the `matilda` object, 20
+```
+
+However, when a function is assigned to a variable and called as a regular function, `this` will be `undefined` (in strict mode) or the global object.
+
+```js showLineNumbers
+const f = jonas.calcAge;
+f(); // Outputs: undefined (or global object in non-strict mode)
+```
+
+- **Function Invocation**: In a regular function, `this` refers to the global object (non-strict mode) or `undefined` (strict mode).
+
+```js showLineNumbers
+// Regular function | Function declaration
+function calcAge1(birthYear) {
+  console.log(2037 - birthYear);
+  console.log(this); // Outputs: global object (or undefined in strict mode)
+}
+calcAge1(1991);
+
+// Regular function | Function Expression
+const calcAge2 = function (birthYear) {
+  console.log(2037 - birthYear);
+  console.log(this); // Outputs: global object (or undefined in strict mode)
+};
+calcAge2(1991);
+```
+
+- **Arrow Functions**: Arrow functions do not have their own `this` context; `this` is lexically inherited from the parent scope.
+
+```js showLineNumbers
+const calcAgeArrow = (birthYear) => {
+  console.log(2037 - birthYear);
+  console.log(this); // Inherits `this` from its surrounding scope
+};
+calcAgeArrow(1980); // Outputs: 57, undefined or the surrounding context object
+```
+
+### `this` in Regular Functions vs. Arrow Functions
+
+One key difference between regular functions and arrow functions is how they handle `this`.
+
+#### Regular Functions:
+
+Regular functions get their own `this` context depending on how they are called.
+
+```js showLineNumbers
+const jonas = {
+  firstName: "Jonas",
+  year: 1991,
+  calcAge: function () {
+    console.log(this.year); // Outputs: 1991
+    const isMillenial = function () {
+      console.log(this); // `this` is undefined (strict mode) or global object (non-strict)
+    };
+    isMillenial();
+  },
+};
+jonas.calcAge();
+```
+
+#### Arrow Functions:
+
+Arrow functions inherit `this` from their parent scope, making them especially useful in scenarios like nested functions or event handlers.
+
+```js showLineNumbers
+const jonas = {
+  firstName: "Jonas",
+  year: 1991,
+  calcAge: function () {
+    const isMillenial = () => {
+      console.log(this); // `this` refers to the parent `jonas` object
+      console.log(this.year >= 1981 && this.year <= 1996); // true
+    };
+    isMillenial();
+  },
+};
+jonas.calcAge();
+```
+
+### Using `this` in Arrow Functions with Methods
+
+Arrow functions in object methods can lead to unexpected behavior. Since arrow functions don’t have their own `this`, they refer to the surrounding context (often the global object).
+
+```js showLineNumbers
+const jonas = {
+  firstName: "Jonas",
+  greet: () => {
+    console.log(this); // `this` refers to the global object (or undefined in strict mode)
+    console.log(`Hey ${this.firstName}`); // `undefined` because `this` is not the object
+  },
+};
+jonas.greet(); // Outputs: undefined or global object, `Hey undefined`
+```
+
+## `call`, `apply`, and `bind` Methods
+
+JavaScript provides three methods (`call`, `apply`, and `bind`) to explicitly set the `this` value inside a function. These methods are especially useful when borrowing methods or working with event listeners.
+
+### 1. `call()` Method
+
+The `call()` method invokes a function with a specified `this` value and arguments provided individually.
+
+#### Syntax
+
+```js showLineNumbers
+functionName.call(thisArg, arg1, arg2, ...);
+```
+
+- `thisArg`: The value you want to use as `this` in the function.
+- `arg1, arg2, ...`: The arguments you want to pass to the function.
+
+#### Example:
+
+```js showLineNumbers
+const lufthansa = {
+  airline: "Lufthansa",
+  iataCode: "LH",
+  bookings: [],
+  book(flightNum, name) {
+    console.log(
+      `${name} booked a seat on ${this.airline} flight ${this.iataCode}${flightNum}`
+    );
+    this.bookings.push({ flight: `${this.iataCode}${flightNum}`, name });
+  },
+};
+
+lufthansa.book(635, "John Smith");
+
+console.log(lufthansa);
+// Outputs:
+// {
+//   airline: 'Lufthansa',
+//   iataCode: 'LH',
+//   bookings: [
+//     { flight: 'LH635', name: 'John Smith' }
+//   ]
+//   book: function...
+// }
+
+const eurowings = {
+  airline: "Eurowings",
+  iataCode: "EW",
+  bookings: [],
+};
+
+// Borrowing the 'book' method from lufthansa
+lufthansa.book.call(eurowings, 23, "Sarah Williams");
+// Logs: Sarah Williams booked a seat on Eurowings flight EW23
+
+console.log(eurowings);
+// Outputs:
+// {
+//   airline: 'Eurowings',
+//   iataCode: 'EW',
+//   bookings: [
+//     { flight: 'EW23', name: 'Sarah Williams' }
+//   ]
+// }
+```
+
+In the example above, we used the `book()` method from the `lufthansa` object but set `this` to refer to the `eurowings` object using `call()`. This way, `eurowings` is now able to "borrow" the `book` method.
+
+```js showLineNumbers
+// THIS DOES NOT WORK
+const book = lufthansa.book; // 'this' is not bound to 'lufthansa' anymore
+book(23, "Sarah Williams"); // 'this' is undefined
+```
+
+#### Why "Does NOT work"?
+
+When you assign `const book = lufthansa.book`, and then try to invoke `book(23, 'Sarah Williams')`, it fails because **the `this` context is lost**. In JavaScript, `this` depends on how the function is called. When `book` is called directly as a regular function (without being called on an object), `this` becomes `undefined` (in `strict mode`) or the global object (in non-strict mode).
+
+#### Why use `call()` over `eurowings.book = lufthansa.book`?
+
+1. **Immediate Invocation with Custom `this`**: The `call()` method allows you to immediately invoke the `book` function while explicitly specifying what `this` should refer to. In this case, by using `call()`, you can borrow the `book` function from `lufthansa` and apply it to `eurowings` right away. This is useful for one-time function calls.
+
+2. **Avoid Permanently Modifying `eurowings`**: If you were to do `eurowings.book = lufthansa.book`, this would permanently assign the `book` method to `eurowings`. This means `eurowings` now has its own book method. This approach might seem fine, but it has limitations:
+
+   - **Unnecessary duplication**: You now have the same `book` method in both `lufthansa` and `eurowings`, which creates code duplication.
+   - **No flexibility**: Once you assign `eurowings.book = lufthansa.book`, the `book` function is permanently bound to `eurowings`. If you want to use the same method for other airlines or objects, you would need to copy it again. `call()` allows for more flexibility without making permanent changes to the object.
+
+3. **Flexibility with Different Objects**: Using `call()`, you can borrow and invoke the method for multiple objects without assigning the method to each one. It makes your code cleaner and more reusable, especially when dealing with many different objects.
+
+### 2. `apply()` Method
+
+The `apply()` method is similar to `call()`, but it accepts arguments as an array.
+
+#### syntax
+
+```js showLineNumbers
+functionName.apply(thisArg, [argsArray]);
+```
+
+- `thisArg`: The value you want to use as `this` in the function.
+- `argsArray`: An array of arguments you want to pass to the function.
+
+#### Example:
+
+```js showLineNumbers
+const flightData = [583, "George Cooper"];
+lufthansa.book.apply(eurowings, flightData);
+// Logs: George Cooper booked a seat on Eurowings flight EW583
+```
+
+In this case, instead of passing arguments one by one as we did with `call()`, we provide them as an array using `apply()`.
+
+In modern JavaScript, the spread operator `...` can be used with `call()` to achieve the same result.
+
+### 3. `bind()` Method
+
+The `bind()` method returns a new function where `this` is permanently bound to the provided object.
+
+#### Syntax
+
+```js showLineNumbers
+const boundFunction = functionName.bind(thisArg, arg1, arg2, ...);
+```
+
+- `thisArg`: The value you want to bind as this in the function.
+- `arg1, arg2, ...`: (Optional) Arguments to pre-fill in the function (partial application).
+
+#### Example:
+
+```js showLineNumbers
+const bookEW = lufthansa.book.bind(eurowings);
+bookEW(23, "Steven Williams");
+// Logs: Steven Williams booked a seat on Eurowings flight EW23
+```
+
+In this example, we create a new function `bookEW` that has `this` permanently set to `eurowings`. You can now call `bookEW()` later, and it will always use `eurowings` as `this`.
+
+#### Partial Application with `bind()`
+
+You can also use `bind()` to create a partially applied function, meaning you pre-fill some arguments and later invoke the function with the remaining ones.
+
+##### Example:
+
+```js showLineNumbers
+const bookEW23 = lufthansa.book.bind(eurowings, 23); // Pre-fill flight number
+bookEW23("Jonas Taylor");
+// Logs: Jonas Taylor booked a seat on Eurowings flight EW23
+bookEW23("Martha Cooper");
+// Logs: Martha Cooper booked a seat on Eurowings flight EW23
+```
+
+In this case, `bookEW23` is a new function where the flight number `23` is pre-filled. You only need to pass the passenger's name when calling it.
+
+### Practical Uses of `bind()`
+
+1. With Event Listeners
+
+`bind()` is particularly useful when working with event listeners, where `this` often gets lost (it typically points to the HTML element that triggered the event). You can ensure `this` refers to the correct object by using `bind()`.
+
+#### Example:
+
+```js showLineNumbers
+lufthansa.planes = 300;
+lufthansa.buyPlane = function () {
+  console.log(this);
+  this.planes++;
+  console.log(this.planes);
+};
+
+// Without bind, 'this' would point to the button element
+document
+  .querySelector(".buy")
+  .addEventListener("click", lufthansa.buyPlane.bind(lufthansa));
+```
+
+In this example, `this` inside `buyPlane()` will always refer to the `lufthansa` object, even though it's triggered by a button click.
+
+2. Partial Application
+
+`bind()` can be used to create functions with preset arguments, which is known as **partial application**.
+
+#### Example:
+
+```js showLineNumbers
+const addTax = (rate, value) => value + value * rate;
+const addVAT = addTax.bind(null, 0.23); // Pre-fix the VAT rate to 23%
+console.log(addVAT(100)); // 123
+console.log(addVAT(200)); // 246
+```
+
+## The `arguments` Keyword
+
+In regular functions, the `arguments` object is available, allowing access to all the arguments passed to the function. Arrow functions, however, do not have access to `arguments`.
+
+### Example with Regular Functions:
+
+```js showLineNumbers
+const addExpr = function (a, b) {
+  console.log(arguments); // Outputs: Arguments(2) [2, 5]
+  return a + b;
+};
+addExpr(2, 5);
+```
+
+### Example with Arrow Functions:
+
+```js showLineNumbers
+const addArrow = (a, b) => {
+  console.log(arguments); // ReferenceError: arguments is not defined
+  return a + b;
+};
+addArrow(2, 5);
+```
+
+Here, `addVAT` is a function with the VAT rate pre-set to 23%, making it easier to reuse in multiple calculations.
+
+## Other types of Functions
+
+### 1. Immediately Invoked Function Expressions (IIFE)
+
+An **Immediately Invoked Function Expression (IIFE)** is a function that runs as soon as it is defined. IIFEs are often used to avoid polluting the global scope or to create a private scope.
+
+#### Characteristics:
+
+- **Self-Executing**: IIFEs are functions that execute immediately after being defined.
+- **Creates a Private Scope**: Useful for creating a scope that does not affect the global scope.
+
+##### Example:
+
+```js showLineNumbers
+(function () {
+  console.log("This is an IIFE!");
+})(); // Outputs: This is an IIFE!
+```
+
+### 2. Async Functions
+
+Async functions, introduced in ES8, allow you to write asynchronous code using a synchronous-looking syntax. They always return a promise.
+
+#### Characteristics:
+
+- **Always Return a Promise**: Async functions always return a promise.
+- **`await` Keyword**: The `await` keyword pauses the function execution until a promise is resolved.
+- **Simplifies Promises**: Async functions provide a simpler way to work with promises and asynchronous code.
+
+##### Example:
+
+```js showLineNumbers
+async function fetchData() {
+  const response = await fetch("https://api.example.com/data");
+  const data = await response.js showLineNumberson();
+  console.log(data);
+}
+
+fetchData();
+```
+
+### 3. Constructor Functions
+
+Constructor functions are used to create objects. They are regular functions, but by convention, they are written with a capital letter and are intended to be called with the `new` keyword.
+
+#### Characteristics:
+
+- **Used to Create Objects**: Constructor functions are used to create and initialize objects.
+- **`this` Refers to the Instance**: Inside a constructor function, `this` refers to the instance being created.
+
+##### Example:
+
+```js showLineNumbers
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+
+const person1 = new Person("Alice", 25);
+console.log(person1); // Outputs: Person { name: 'Alice', age: 25 }
+```
+
+## Conclusion
+
+Understanding the differences between regular and arrow functions, as well as the nuances of `this`, is essential in mastering JavaScript. Additionally, knowing how to manipulate `this` using `call`, `apply`, and `bind` gives you greater control over function execution in different contexts. Keep practicing with these concepts, and you'll see how they improve your JavaScript coding skills!
