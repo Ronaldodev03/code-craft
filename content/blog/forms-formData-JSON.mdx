@@ -16,7 +16,7 @@ Sending form data to a server is a common task in web development. There are mul
 
 Let's start with a simple HTML form that includes a file upload:
 
-```html
+```html showLineNumbers
 <form id="myForm">
   <label for="username">Username:</label>
   <input type="text" id="username" name="username" required />
@@ -33,8 +33,10 @@ Let's start with a simple HTML form that includes a file upload:
 
 You can handle the form submission using JavaScript:
 
-```js
+```js showLineNumbers
 const form = document.getElementById("myForm");
+
+console.log(form); // Ouputs: <form id="myForm"></form>
 
 form.addEventListener("submit", function (event) {
   event.preventDefault();
@@ -55,6 +57,10 @@ form.addEventListener("submit", function (event) {
 });
 ```
 
+### Why We Can Pass an HTML Form to FormData
+
+You can pass an HTML form element to the `FormData` constructor because it automatically extracts all the input fields with their `name` attributes and values from the form. The `FormData` object builds key-value pairs where the key is the input's `name` and the value is the user-provided data. It also handles file uploads via `input[type="file"]` seamlessly. This allows you to easily send form data without manually gathering or serializing the inputs.
+
 ### Why We Don't Send Headers with `FormData`
 
 When sending data using `FormData`, you generally don't need to set the `Content-Type` header manually. The browser automatically sets the appropriate `Content-Type` to `multipart/form-data` and includes a boundary marker that separates the different parts of the form. Manually setting the `Content-Type` header can cause issues with how the data is processed on the server, as the boundary would not be included, making it difficult to parse the multipart data correctly.
@@ -63,7 +69,7 @@ When sending data using `FormData`, you generally don't need to set the `Content
 
 By using `Object.fromEntries(formData)`, you can easily convert the `FormData` object into a plain JavaScript object to inspect its contents:
 
-```js
+```js showLineNumbers
 // Example output in the console
 {
   username: "JohnDoe",
@@ -82,7 +88,7 @@ Another common way to send form data is by encoding it as JSON. This method is u
 
 Consider the same form as before, but this time we'll serialize the data to JSON:
 
-```js
+```js showLineNumbers
 const form = document.getElementById("myForm");
 
 form.addEventListener("submit", function (event) {
@@ -110,7 +116,7 @@ Again, we use `Object.fromEntries()` to convert the `FormData` into a JSON-seria
 
 ## Inspecting JSON Data
 
-```js
+```js showLineNumbers
 // Example output in the console (files will be excluded)
 {
   username: "JohnDoe",
@@ -124,9 +130,9 @@ Files are excluded from this JSON serialization because JSON.stringify() cannot 
 
 For a more advanced use case, let's implement form submission using React with TypeScript. We'll send the form data as JSON.
 
-### React Component with TypeScript
+### 1. React Component with TypeScript [ without file uploads ]
 
-```tsx
+```tsx showLineNumbers
 import React, { useState } from "react";
 
 type FormData = {
@@ -197,6 +203,287 @@ export default MyForm;
 ```
 
 In this example, the data is directly sent as JSON, so there is no need to use `Object.fromEntries()` in the React implementation.
+
+### 2. React Component with TypeScript [ with file uploads ]
+
+```tsx showLineNumbers
+import React, { useState } from "react";
+
+type FormDataType = {
+  username: string;
+  email: string;
+  profilePic: File | null;
+};
+
+const MyFormWithFileUpload: React.FC = () => {
+  const [formData, setFormData] = useState<FormDataType>({
+    username: "",
+    email: "",
+    profilePic: null,
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, files } = e.target;
+
+    // For file inputs, use the `files` property
+    if (name === "profilePic" && files) {
+      setFormData({
+        ...formData,
+        profilePic: files[0],
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const data = new FormData();
+    data.append("username", formData.username);
+    data.append("email", formData.email);
+    if (formData.profilePic) {
+      data.append("profilePic", formData.profilePic);
+    }
+
+    try {
+      const response = await fetch("/submit", {
+        method: "POST",
+        body: data, // Using FormData for file upload
+      });
+
+      const result = await response.json();
+      console.log(result);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="username">Username:</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        value={formData.username}
+        onChange={handleChange}
+        required
+      />
+
+      <label htmlFor="email">Email:</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        value={formData.email}
+        onChange={handleChange}
+        required
+      />
+
+      <label htmlFor="profilePic">Profile Picture:</label>
+      <input
+        type="file"
+        id="profilePic"
+        name="profilePic"
+        onChange={handleChange}
+        required
+      />
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+
+export default MyFormWithFileUpload;
+```
+
+##### Explanation:
+
+- **State Management**: We use the `useState` hook to store the form data, including text fields (`username`, `email`) and the file (`profilePic`), initialized with an empty string for text fields and null for the file.
+
+- **File Handling**: In the `handleChange` function, we check if the input is a file (`e.target.name === "profilePic"`). If so, we use `e.target.files[0]` to grab the selected file.
+
+- **FormData**: When submitting the form, we use the `FormData` API. This allows us to easily append both text data and files to the request body.
+
+- **Headers**: No `Content-Type` headers are needed because the `FormData` API automatically sets the appropriate multipart boundary headers for file uploads.
+
+This allows you to send both form text data and files in a single request, suitable for forms that include file uploads.
+
+### 3. React Component with TypeScript [ with file uploads, file predicate function and a loop for the `data.append()` method ]
+
+```tsx showLineNumbers
+import React, { useState } from "react";
+
+// Type for form data
+type FormDataType = {
+  username: string;
+  email: string;
+  age: string;
+  profilePic: File | null;
+  coverLetter: File | null;
+};
+
+// Type predicate to check if a value is a File
+const isFile = (value: unknown): value is File => value instanceof File;
+
+const MyFormWithFileUpload: React.FC = () => {
+  const [formData, setFormData] = useState<FormDataType>({
+    username: "",
+    email: "",
+    age: "",
+    profilePic: null,
+    coverLetter: null,
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, files } = e.target;
+
+    // Handle file inputs
+    if (files) {
+      setFormData({
+        ...formData,
+        [name]: files[0], // only single file handled
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formDataToSend = new FormData();
+
+    // Iterate over formData and append it to formDataToSend
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        if (isFile(value)) {
+          formDataToSend.append(key, value);
+        } else {
+          formDataToSend.append(key, String(value));
+        }
+      }
+    });
+
+    try {
+      const response = await fetch("/submit", {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      const result = await response.json();
+      console.log(result);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="username">Username:</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        value={formData.username}
+        onChange={handleChange}
+        required
+      />
+
+      <label htmlFor="email">Email:</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        value={formData.email}
+        onChange={handleChange}
+        required
+      />
+
+      <label htmlFor="age">Age:</label>
+      <input
+        type="number"
+        id="age"
+        name="age"
+        value={formData.age}
+        onChange={handleChange}
+        required
+      />
+
+      <label htmlFor="profilePic">Profile Picture:</label>
+      <input
+        type="file"
+        id="profilePic"
+        name="profilePic"
+        onChange={handleChange}
+        required
+      />
+
+      <label htmlFor="coverLetter">Cover Letter (PDF):</label>
+      <input
+        type="file"
+        id="coverLetter"
+        name="coverLetter"
+        accept=".pdf"
+        onChange={handleChange}
+      />
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+
+export default MyFormWithFileUpload;
+```
+
+##### Explanation:
+
+1.  **Additional Inputs:**
+
+    - I’ve added more input fields like `age` (a number input) and `coverLetter` (a file input for PDFs).
+
+2.  **File Handling:**
+
+    - When handling file inputs (`<input type="file">`), the `files` array is checked, and the first file (`files[0]`) is assigned to the respective state property (`profilePic` or `coverLetter`).
+
+3.  **Type Predicate `isFile`:**
+
+    - The `isFile` function is a type predicate used to check if the value is a `File` object. If it is, we append it directly to the `FormData` object. If it's not a file, the value is converted to a string and then appended.
+
+4.  **FormData Iteration:**
+
+    - We use `Object.entries` to iterate over the key-value pairs in the `formData` state object. This ensures that each property, whether it's a string (like `username`) or a file (like `profilePic`), is correctly appended to the `FormData`.
+
+5.  **File Types:**
+
+    - For the `coverLetter` field, we use the `accept=".pdf"` attribute to restrict the file input to only accept PDFs.
+
+This setup is highly scalable. If you need more inputs, you can simply add them to the `FormDataType` type and modify the form accordingly. The iteration function will handle them seamlessly.
+
+### Extra info: Type Predicate in TypeScript
+
+A **type predicate** in TypeScript is a special kind of return type for a function that tells TypeScript what type a value is after the function has been called. This is useful when performing type checks on variables whose types aren't initially known (e.g., `unknown` or `any` types), allowing TypeScript to narrow down the type based on the result of the function.
+
+#### Example:
+
+Here’s a simple example to explain how a type predicate works:
+
+```tsx showLineNumbers
+// A function to check if a value is a string
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+```
+
+- The return type `value is string` is a type predicate. It tells TypeScript that if `isString(value)` returns `true`, the `value` is of type `string`.
+- Inside an `if` block or conditional, TypeScript will automatically know that `value` is a string after checking with `isString`.
 
 ## When to Use FormData vs. JSON
 

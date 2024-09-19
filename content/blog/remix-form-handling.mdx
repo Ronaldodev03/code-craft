@@ -1,0 +1,381 @@
+---
+title: Handling Form Submissions in Remix Run | Using Fetcher and Zod Validation
+description: Discover how to handle form submissions in Remix Run with a practical example using fetcher, Zod for validation, and React Hook Form. Learn to manage file uploads, object fields, and arrays of strings effectively.
+date: 2024-09-18
+tags: ["Remix", "forms", "React", "TS"]
+published: True
+---
+
+Handling form submissions in Remix Run is a crucial aspect of building dynamic web applications. Remix Run provides powerful tools to manage forms efficiently, and in this article, we will delve into a practical example using `fetcher` for form submissions, `Zod` for validation, and `React Hook Form` for managing form state. We’ll cover how to handle various input types including file uploads, object fields, and arrays of strings. Additionally, we’ll explore how to integrate these tools to create a robust and validated form submission process\***\*.\*\***
+
+## Tools and Technologies Used
+
+- **Remix Run**: A framework for building modern web applications with a focus on fast navigation and optimized performance.
+- **React Hook Form**: A library for managing form state and validation in React applications.
+- **Zod**: A TypeScript-first schema declaration and validation library.
+- **Fetcher**: Remix's data-fetching utility for handling form submissions and data operations.
+
+### Setting Up the Form
+
+First, let's create a form with various input types. We'll include text fields, file uploads, checkboxes, and an object field.
+
+1. **Define the Schema with Zod**
+
+   We start by defining our schema with `Zod` to ensure our form data is validated correctly.
+
+```tsx showLineNumbers
+// app/schemas/formSchema.ts
+import { z } from "zod";
+
+export const formSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  email: z.string().email("Invalid email"),
+  interests: z
+    .array(z.string())
+    .nonempty("At least one interest must be selected"),
+  profilePic: z.string().optional(), // Will handle file uploads differently
+  profileInfo: z
+    .object({
+      age: z.number().int().positive().optional(),
+      bio: z.string().optional(),
+    })
+    .optional(),
+});
+
+export type FormData = z.infer<typeof formSchema>;
+```
+
+2. **Create the React Component**
+
+   Next, we'll create a form component using React Hook Form and fetcher from Remix Run.
+
+```tsx showLineNumbers
+// app/routes/index.tsx
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { formSchema, FormData } from "~/schemas/formSchema";
+import { json, ActionFunction } from "@remix-run/node";
+import { useFetcher } from "@remix-run/react";
+
+export const action: ActionFunction = async ({ request }) => {
+  const formData = new FormData(await request.text());
+  const data = Object.fromEntries(formData);
+
+  // Extract and parse form data
+  const interests = formData.getAll("interests") as string[];
+  const profilePic = formData.get("profilePic");
+  const profileInfo = JSON.parse(formData.get("profileInfo") as string);
+
+  try {
+    // Validate data with Zod schema
+    formSchema.parse({
+      ...data,
+      interests,
+      profilePic,
+      profileInfo,
+    });
+
+    // Process file upload
+    if (profilePic && profilePic instanceof File) {
+      console.log("Profile Picture:", profilePic);
+    }
+
+    // Return success response
+    return json({ message: "Form submitted successfully" });
+  } catch (error) {
+    return json(
+      { message: "Validation failed", error: error.errors },
+      { status: 400 }
+    );
+  }
+};
+
+export default function MyForm() {
+  const fetcher = useFetcher();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      profileInfo: { age: 0, bio: "" },
+    },
+  });
+
+  const onSubmit = (data: FormData) => {
+    const formData = new FormData();
+    formData.append("username", data.username);
+    formData.append("email", data.email);
+    data.interests.forEach((interest) =>
+      formData.append("interests", interest)
+    );
+    if (data.profilePic) formData.append("profilePic", data.profilePic[0]);
+    formData.append("profileInfo", JSON.stringify(data.profileInfo));
+
+    fetcher.submit(formData, { method: "post" });
+  };
+
+  return (
+    <fetcher.Form
+      method="post"
+      encType="multipart/form-data"
+      onSubmit={handleSubmit(onSubmit)}
+    >
+      {/* Username */}
+      <label htmlFor="username">Username:</label>
+      <input {...register("username")} id="username" />
+      {errors.username && <p>{errors.username.message}</p>}
+
+      {/* Email */}
+      <label htmlFor="email">Email:</label>
+      <input type="email" {...register("email")} id="email" />
+      {errors.email && <p>{errors.email.message}</p>}
+
+      {/* Interests (Checkboxes) */}
+      <fieldset>
+        <legend>Select Interests:</legend>
+        <label>
+          <input type="checkbox" value="coding" {...register("interests")} />
+          Coding
+        </label>
+        <label>
+          <input type="checkbox" value="music" {...register("interests")} />
+          Music
+        </label>
+        <label>
+          <input type="checkbox" value="sports" {...register("interests")} />
+          Sports
+        </label>
+        {errors.interests && <p>{errors.interests.message}</p>}
+      </fieldset>
+
+      {/* Profile Picture */}
+      <label htmlFor="profilePic">Profile Picture:</label>
+      <input type="file" {...register("profilePic")} id="profilePic" />
+      {errors.profilePic && <p>{errors.profilePic.message}</p>}
+
+      {/* Profile Info (Object Field) */}
+      <fieldset>
+        <legend>Profile Info:</legend>
+        <label htmlFor="age">Age:</label>
+        <input type="number" {...register("profileInfo.age")} id="age" />
+
+        <label htmlFor="bio">Bio:</label>
+        <textarea {...register("profileInfo.bio")} id="bio" />
+        {errors.profileInfo && <p>{errors.profileInfo.message}</p>}
+      </fieldset>
+
+      <button type="submit">Submit</button>
+    </fetcher.Form>
+  );
+}
+```
+
+### Explanation
+
+1. **Schema Definition:**
+
+   -`Zod` schema is defined to validate form inputs, including text fields, checkboxes (array of strings), and an object field.
+
+2. **React Component:**
+
+   -Uses `React Hook Form` for managing form state and validation. -`fetcher.submit` is used to submit the form data, including handling files and complex objects. -`fetcher.Form` wraps the form to enable Remix’s data fetching and submission capabilities.
+
+3. **Action Function:**
+
+   -Receives form data, processes it (including file uploads and object fields), and validates it with `Zod`.
+   -Handles errors and returns appropriate responses.
+
+## Another Example
+
+1. **Define the Schema with Zod**
+   We define our schema to validate different types of inputs, including arrays, nested objects, and optional file uploads.
+
+```tsx showLineNumbers
+// app/schemas/formSchema.ts
+import { z } from "zod";
+
+export const formSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  email: z.string().email("Invalid email address"),
+  interests: z.array(z.string()).nonempty("Select at least one interest"),
+  profilePic: z.string().optional(), // Handle file uploads separately
+  coverPic: z.string().optional(), // Handle additional file upload
+  profileInfo: z
+    .object({
+      age: z.number().int().positive().optional(),
+      bio: z.string().optional(),
+    })
+    .optional(),
+});
+
+export type FormData = z.infer<typeof formSchema>;
+```
+
+2. **Create the React Component**
+   Let’s create a React component that utilizes `React Hook Form` and `fetcher` from Remix Run to manage form submissions.
+
+```tsx showLineNumbers
+// app/routes/index.tsx
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { formSchema, FormData } from "~/schemas/formSchema";
+import { json, ActionFunction } from "@remix-run/node";
+import { useFetcher } from "@remix-run/react";
+
+// Type predicate to check if a value is a File
+const isFile = (value: unknown): value is File => value instanceof File;
+
+export const action: ActionFunction = async ({ request }) => {
+  const formData = new FormData(await request.text());
+
+  // Helper to convert formData to an object
+  const formDataToObject = (formData: FormData) => {
+    const obj: Record<string, any> = {};
+    for (const [key, value] of formData.entries()) {
+      obj[key] = value;
+    }
+    return obj;
+  };
+
+  const data = formDataToObject(formData);
+  const interests = formData.getAll("interests") as string[];
+  const profilePic = formData.get("profilePic");
+  const coverPic = formData.get("coverPic");
+  const profileInfo = JSON.parse(formData.get("profileInfo") as string);
+
+  try {
+    // Validate the data using Zod schema
+    formSchema.parse({
+      ...data,
+      interests,
+      profilePic,
+      coverPic,
+      profileInfo,
+    });
+
+    // Handle file uploads if present
+    if (profilePic && profilePic instanceof File) {
+      console.log("Uploaded Profile Picture:", profilePic);
+    }
+    if (coverPic && coverPic instanceof File) {
+      console.log("Uploaded Cover Picture:", coverPic);
+    }
+
+    return json({ message: "Form submitted successfully" });
+  } catch (error) {
+    return json(
+      { message: "Validation failed", error: error.errors },
+      { status: 400 }
+    );
+  }
+};
+
+export default function MyForm() {
+  const fetcher = useFetcher();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      profileInfo: { age: 0, bio: "" },
+    },
+  });
+
+  const onSubmit = (data: FormData) => {
+    const formDataToSend = new FormData();
+
+    // Convert form data to FormData for submission
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        if (Array.isArray(value)) {
+          value.forEach((item) => formDataToSend.append(key, item)); // <-- files here? because value[0] in files and we are using only value?
+        } else if (isFile(value)) {
+          formDataToSend.append(key, value);
+        } else if (typeof value === "object") {
+          formDataToSend.append(key, JSON.stringify(value));
+        } else {
+          formDataToSend.append(key, String(value));
+        }
+      }
+    });
+
+    fetcher.submit(formDataToSend, { method: "post" });
+  };
+
+  return (
+    <fetcher.Form
+      method="post"
+      encType="multipart/form-data"
+      onSubmit={handleSubmit(onSubmit)}
+    >
+      {/* Username */}
+      <label htmlFor="username">Username:</label>
+      <input {...register("username")} id="username" />
+      {errors.username && <p>{errors.username.message}</p>}
+
+      {/* Email */}
+      <label htmlFor="email">Email:</label>
+      <input type="email" {...register("email")} id="email" />
+      {errors.email && <p>{errors.email.message}</p>}
+
+      {/* Interests (Checkboxes) */}
+      <fieldset>
+        <legend>Select Interests:</legend>
+        <label>
+          <input type="checkbox" value="coding" {...register("interests")} />
+          Coding
+        </label>
+        <label>
+          <input type="checkbox" value="music" {...register("interests")} />
+          Music
+        </label>
+        <label>
+          <input type="checkbox" value="sports" {...register("interests")} />
+          Sports
+        </label>
+        {errors.interests && <p>{errors.interests.message}</p>}
+      </fieldset>
+
+      {/* Profile Picture */}
+      <label htmlFor="profilePic">Profile Picture:</label>
+      <input type="file" {...register("profilePic")} id="profilePic" />
+      {errors.profilePic && <p>{errors.profilePic.message}</p>}
+
+      {/* Cover Picture */}
+      <label htmlFor="coverPic">Cover Picture:</label>
+      <input type="file" {...register("coverPic")} id="coverPic" />
+      {errors.coverPic && <p>{errors.coverPic.message}</p>}
+
+      {/* Profile Info (Object Field) */}
+      <fieldset>
+        <legend>Profile Info:</legend>
+        <label htmlFor="age">Age:</label>
+        <input type="number" {...register("profileInfo.age")} id="age" />
+
+        <label htmlFor="bio">Bio:</label>
+        <textarea {...register("profileInfo.bio")} id="bio" />
+        {errors.profileInfo && <p>{errors.profileInfo.message}</p>}
+      </fieldset>
+
+      <button type="submit">Submit</button>
+    </fetcher.Form>
+  );
+}
+```
+
+### Summary
+
+    - **Array Values**: Each item in an array is appended to `FormData` with the same key.
+
+    - **File Values**: A `File` object is appended directly with the key.
+
+    - **Object Values**: Objects are converted to JSON strings before being appended.
+
+    - **Other Values**: Any other value is converted to a string before being appended.
+
+This setup ensures robust handling of form submissions in Remix Run, with validation and processing capabilities for various types of form data.
