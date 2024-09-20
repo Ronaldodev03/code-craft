@@ -6,7 +6,7 @@ tags: ["Remix", "forms", "React", "TS"]
 published: True
 ---
 
-Handling form submissions in Remix Run is a crucial aspect of building dynamic web applications. Remix Run provides powerful tools to manage forms efficiently, and in this article, we will delve into a practical example using `fetcher` for form submissions, `Zod` for validation, and `React Hook Form` for managing form state. We’ll cover how to handle various input types including file uploads, object fields, and arrays of strings. Additionally, we’ll explore how to integrate these tools to create a robust and validated form submission process\***\*.\*\***
+Handling form submissions in Remix Run is a crucial aspect of building dynamic web applications. Remix Run provides powerful tools to manage forms efficiently, and in this article, we will delve into a practical example using `fetcher` for form submissions, `Zod` for validation, and `React Hook Form` for managing form state. We’ll cover how to handle various input types including file uploads, object fields, and arrays of strings. Additionally, we’ll explore how to integrate these tools to create a robust and validated form submission process.
 
 ## Tools and Technologies Used
 
@@ -58,7 +58,8 @@ import { json, ActionFunction } from "@remix-run/node";
 import { useFetcher } from "@remix-run/react";
 
 export const action: ActionFunction = async ({ request }) => {
-  const formData = new FormData(await request.text());
+  //const formData = new FormData(await request.text());
+  const formData = await request.formData();
   const data = Object.fromEntries(formData);
 
   // Extract and parse form data
@@ -114,13 +115,17 @@ export default function MyForm() {
     if (data.profilePic) formData.append("profilePic", data.profilePic[0]);
     formData.append("profileInfo", JSON.stringify(data.profileInfo));
 
-    fetcher.submit(formData, { method: "post" });
+    fetcher.submit(formData, {
+      method: "post",
+      encType: "multipart/form-data",
+      action: "route-of-the-action", // we don't set this when the action is in the same route
+    });
   };
 
   return (
     <fetcher.Form
-      method="post"
-      encType="multipart/form-data"
+      // method="post"
+      // encType="multipart/form-data"
       onSubmit={handleSubmit(onSubmit)}
     >
       {/* Username */}
@@ -188,6 +193,12 @@ export default function MyForm() {
    -Receives form data, processes it (including file uploads and object fields), and validates it with `Zod`.
    -Handles errors and returns appropriate responses.
 
+### Why is `encType="multipart/form-data"` used in Remix?
+
+**Remix uses the HTML form attributes**: When you use a `fetcher` in Remix, the framework handles forms based on their attributes. By including `encType="multipart/form-data"`, you're indicating to Remix that it should expect a submission with data in multipart format (which can include files), and it will internally handle the proper encoding.
+
+**Remix doesn't always automatically detect `FormData`**: Even though you're passing a `FormData` instance in your JavaScript code, Remix requires `encType="multipart/form-data"` to know that files may be involved. This ensures that Remix processes the form as a multipart submission, as the form may also be handled on the server.
+
 ## Another Example
 
 1. **Define the Schema with Zod**
@@ -229,7 +240,8 @@ import { useFetcher } from "@remix-run/react";
 const isFile = (value: unknown): value is File => value instanceof File;
 
 export const action: ActionFunction = async ({ request }) => {
-  const formData = new FormData(await request.text());
+  //const formData = new FormData(await request.text());
+  const formData = await request.formData();
 
   // Helper to convert formData to an object
   const formDataToObject = (formData: FormData) => {
@@ -293,9 +305,9 @@ export default function MyForm() {
     Object.entries(data).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
         if (Array.isArray(value)) {
-          value.forEach((item) => formDataToSend.append(key, item)); // <-- files here? because value[0] in files and we are using only value?
+          value.forEach((item) => formDataToSend.append(key, item)); // <-- files goes here? because value[0] in files, they aren't an array?
         } else if (isFile(value)) {
-          formDataToSend.append(key, value);
+          formDataToSend.append(key, value); // <-- I'm no sure if files land here or in the condition up this one
         } else if (typeof value === "object") {
           formDataToSend.append(key, JSON.stringify(value));
         } else {
@@ -304,13 +316,17 @@ export default function MyForm() {
       }
     });
 
-    fetcher.submit(formDataToSend, { method: "post" });
+    fetcher.submit(formDataToSend, {
+      method: "post",
+      encType: "multipart/form-data",
+      action: "route-of-the-action", // we don't set this when the action is in the same route
+    });
   };
 
   return (
     <fetcher.Form
-      method="post"
-      encType="multipart/form-data"
+      // method="post"
+      // encType="multipart/form-data"
       onSubmit={handleSubmit(onSubmit)}
     >
       {/* Username */}

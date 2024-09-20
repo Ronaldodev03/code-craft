@@ -41,7 +41,7 @@ console.log(form); // Ouputs: <form id="myForm"></form>
 form.addEventListener("submit", function (event) {
   event.preventDefault();
 
-  const formData = new FormData(form);
+  const formData = new FormData(form); // This automatically uses multipart/form-data for the request.
 
   // View the data using Object.fromEntries()
   const dataObject = Object.fromEntries(formData);
@@ -303,7 +303,7 @@ export default MyFormWithFileUpload;
 
 ##### Explanation:
 
-- **State Management**: We use the `useState` hook to store the form data, including text fields (`username`, `email`) and the file (`profilePic`), initialized with an empty string for text fields and null for the file.
+- **State Management**: We use the `useState` hook to store the form data, including text fields (`username`, `email`) and the file (`profilePic`), initialized with an empty string for text fields and `null` for the file.
 
 - **File Handling**: In the `handleChange` function, we check if the input is a file (`e.target.name === "profilePic"`). If so, we use `e.target.files[0]` to grab the selected file.
 
