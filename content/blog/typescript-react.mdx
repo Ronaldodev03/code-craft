@@ -200,8 +200,11 @@ const combinedEntries: Entry[] = [
   ...users.titulars.physical,
 ];
 
-// Process and format entries
-combinedEntries.forEach(processEntry);
+// Process each entries
+combinedEntries.forEach(processEntry); // this does the same as line below, but less explicit
+//combinedEntries.forEach((entry: Entry) => processEntry(entry));
+
+// Format entries
 const formattedEntries = formatEntries(combinedEntries);
 
 console.log(formattedEntries);
@@ -215,6 +218,110 @@ console.log(formattedEntries);
 ```
 
 In this example, `Entry` is a combined type that can be either a juridical or a physical person from the schema. This allows us to write functions that can handle both types seamlessly, with TypeScript ensuring that the properties of each type are accessed correctly.
+
+### Another Example
+
+```tsx showLineNumbers
+type IndividualHolder = {
+  name_ind: string;
+  last_name_ind: string;
+  age: number;
+};
+
+type CorporateHolder = {
+  company_name: string;
+  ubicacion: string; // Nueva propiedad para corporaciones
+};
+
+type MainSchemaType = {
+  holders: {
+    individuals: IndividualHolder[];
+    corporations: CorporateHolder[];
+  };
+};
+
+type FormattedEntry = {
+  name: string;
+  type: "individual" | "corporation";
+  last_name?: string;
+  ubicacion?: string;
+};
+
+type Entry =
+  | MainSchemaType["holders"]["individuals"][number]
+  | MainSchemaType["holders"]["corporations"][number];
+
+function processEntries(entries: Entry[]): FormattedEntry[] {
+  const formattedData: FormattedEntry[] = [];
+
+  entries.forEach((entry) => {
+    if ("name_ind" in entry) {
+      // Individual Holder
+      formattedData.push({
+        name: entry.name_ind,
+        type: "individual",
+        last_name: entry.last_name_ind,
+      });
+    } else {
+      // Corporate Holder
+      formattedData.push({
+        name: entry.company_name,
+        type: "corporation",
+        ubicacion: entry.ubicacion,
+      });
+    }
+  });
+
+  return formattedData;
+}
+
+// Sample data
+const users: MainSchemaType = {
+  holders: {
+    individuals: [
+      {
+        name_ind: "Alice",
+        last_name_ind: "Johnson",
+        age: 28,
+      },
+      {
+        name_ind: "Bob",
+        last_name_ind: "Brown",
+        age: 35,
+      },
+    ],
+    corporations: [
+      {
+        company_name: "TechCorp Inc.",
+        ubicacion: "New York",
+      },
+      {
+        company_name: "Innovate LLC",
+        ubicacion: "San Francisco",
+      },
+    ],
+  },
+};
+
+// Create a combined array of individual and corporate entries
+const combinedEntries: Entry[] = [
+  ...users.holders.corporations,
+  ...users.holders.individuals,
+];
+
+// Process and format entries
+const formattedEntries = processEntries(combinedEntries);
+
+console.log(formattedEntries);
+
+// Output:
+// [
+//   { name: "TechCorp Inc.", type: "corporation", ubicacion: "New York" },
+//   { name: "Innovate LLC.", type: "corporation", ubicacion: "San Francisco" },
+//   { name: "Alice", type: "individual", last_name: "Johnson" },
+//   { name: "Bob", type: "individual", last_name: "Brown" }
+// ]
+```
 
 ## Typing Complex State with Arrays
 
@@ -318,7 +425,7 @@ const user: User = {
 };
 ```
 
-## Using Union Types
+### Using Union Types
 
 Union types are used when a variable or parameter can be of multiple types.
 

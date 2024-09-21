@@ -1,0 +1,143 @@
+---
+title: JavaScript Basics | Type Coercion vs. Type Conversion
+description: Learn the differences between type coercion and type conversion in JavaScript. This article explores how JavaScript handles type changes under the hood, with practical examples, including coercion when logging arrays and more.
+date: 2024-08-05
+Tags: ["JavaScript", "Type Coercion", "Type Conversion", "JS Arrays"]
+published: true
+---
+
+JavaScript is a loosely typed language, meaning variables can hold values of any data type. This flexibility is possible because of two core concepts: **type coercion** and **type conversion**. While these terms sound similar, they are not the same. Understanding how they work is crucial for writing bug-free and efficient code. Let's explore these concepts in depth.
+
+## Type Coercion
+
+**Type coercion** occurs when JavaScript automatically converts one data type to another, usually in the context of an operation. This is implicit and often happens in arithmetic operations, string concatenations, and logical comparisons.
+
+### Example: Coercion in Arithmetic Operations
+
+JavaScript performs automatic type coercion when you use the **+** operator between a string and a number.
+
+```js showLineNumbers
+const result = "5" + 2;
+console.log(result); // Outputs: "52" (string)
+```
+
+In this example, JavaScript coerces the number **2** into a string and concatenates it with "**5**", resulting in "**52**".
+
+However, if you use the **-** operator, JavaScript will coerce the string "**5**" into a number:
+
+```js showLineNumbers
+const result = "5" - 2;
+console.log(result); // Outputs: 3 (number)
+```
+
+### Coercion in Boolean Contexts
+
+JavaScript also performs coercion in boolean contexts, like inside an `if` statement:
+
+```js showLineNumbers
+if ("") {
+  console.log("This won't run");
+} else {
+  console.log("Empty string is falsy");
+}
+// Outputs: "Empty string is falsy"
+```
+
+An empty string is coerced into `false` because it's a "falsy" value. Other falsy values include `0`, `null`, `undefined`, and `NaN`.
+
+## Type Conversion
+
+**Type conversion**, on the other hand, is an explicit change from one data type to another. You perform it manually using built-in functions like `String()`, `Number()`, or `Boolean()`.
+
+### Example: Converting a Number to a String
+
+You can explicitly convert a number to a string using the `String()` function.
+
+```js showLineNumbers
+const num = 42;
+const str = String(num);
+console.log(typeof str); // Outputs: "string"
+```
+
+Here, `String(num)` converts the number **42** to the string "**42**".
+
+### Example: Converting a String to a Number
+
+You can explicitly convert a string to a number using the `Number()` function.
+
+```js showLineNumbers
+const str = "100";
+const num = Number(str);
+console.log(typeof num); // Outputs: "number"
+```
+
+If the string cannot be converted to a valid number, `Number()` will return `NaN` (Not-a-Number).
+
+## Differences Between Type Coercion and Type Conversion
+
+- **Type Coercion**: Happens implicitly. JavaScript tries to guess what type conversion is needed.
+- **Type Conversion**: Happens explicitly. You tell JavaScript what type conversion you want.
+
+### Example: Coercion vs. Conversion
+
+Let's take a look at an example that highlights both coercion and conversion:
+
+```js showLineNumbers
+const a = "10";
+const b = 5;
+
+// Coercion (implicit)
+console.log(a + b); // Outputs: "105" (string)
+
+// Conversion (explicit)
+console.log(Number(a) + b); // Outputs: 15 (number)
+```
+
+In the first case, JavaScript coerces the number **5** to a string and concatenates it with "**10**", resulting in "**105**". In the second case, `Number(a)` explicitly converts "**10**" to a number, allowing the arithmetic operation to proceed as expected.
+
+## Advanced Example: Type Coercion in Arrays and Objects
+
+Type coercion can lead to surprising results when dealing with arrays and objects in certain operations, especially when using `==` or `+`.
+
+### Coercion in Array Contexts
+
+When you try to add an array to a string, JavaScript attempts to coerce the array into a primitive value. In the case of an array, JavaScript calls the `toString()` method, which returns the array elements as a comma-separated string.
+
+```js showLineNumbers
+const arr = [1, 2, 3];
+console.log("Array: " + arr); // Outputs: "Array: 1,2,3"
+```
+
+In this example, JavaScript coerces the array into a string by calling its `toString()` method. As a result, the array **[1, 2, 3]** becomes the string "**1,2,3**".
+
+If the array were empty, it would simply return an empty string:
+
+```js showLineNumbers
+const emptyArr = [];
+console.log("Empty array: " + emptyArr); // Outputs: "Empty array: "
+```
+
+#### Coercion with Arrays in Comparisons
+
+```js showLineNumbers
+console.log([1, 2] == "1,2"); // Outputs: true
+```
+
+In this case, the array **[1, 2]** is coerced into the string "**1,2**", which makes the comparison `true`.
+
+### Coercion in Object Contexts
+
+When you try to add an object to a string, JavaScript attempts to coerce the object into a primitive value. If the object doesn't have a `toString()` or `valueOf()` method, the result will be `[object Object]`.
+
+```js showLineNumbers
+const obj = { name: "Alice" };
+console.log("User: " + obj); // Outputs: "User: [object Object]"
+```
+
+Here, JavaScript coerces the `obj` into the string "**[object Object]**", which is the default string representation of an object in JavaScript.
+
+## Conclusion
+
+Understanding the distinction between **type coercion** and **type conversion** is essential for writing reliable JavaScript code. Type coercion occurs implicitly, often without the developer's knowledge, leading to unexpected behavior. In contrast, type conversion gives you full control over how data types are changed, resulting in more predictable and maintainable code.
+
+By recognizing when coercion happens and opting for explicit conversion when necessary, you can avoid common pitfalls and write cleaner, more efficient JavaScript.
