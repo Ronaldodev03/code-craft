@@ -1,0 +1,284 @@
+---
+title: Building Reusable Components and Utilities in React with Tailwind CSS
+description: Discover how to build reusable components and utility functions in React with Tailwind CSS and TypeScript.
+date: 2024-09-22
+tags: ["React", "CSS", "Components"]
+published: true
+---
+
+When developing a scalable React application, creating reusable components and utility functions is essential for maintaining clean and consistent code. In this article, we'll explore how to build reusable components such as layouts, buttons, inputs, text fields, and more.
+
+## 1. Reusable Layout Component
+
+The layout is a crucial part of a React application that wraps content, typically including a navbar, footer, or sidebar.
+
+```tsx showLineNumbers
+// src/components/Layout.tsx
+type LayoutProps = {
+  children: React.ReactNode;
+};
+
+export const Layout = ({ children }: LayoutProps) => {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <header className="bg-blue-500 p-4">Navbar</header>
+      <main className="flex-grow p-4">{children}</main>
+      <footer className="bg-blue-500 p-4 mt-auto">Footer</footer>
+    </div>
+  );
+};
+```
+
+This `Layout` component can be reused to wrap different pages or sections of the app. It ensures a consistent structure across the application.
+
+## 2. Reusable Button Component
+
+A flexible and reusable button component can handle different variants like primary, secondary, and danger.
+
+```tsx showLineNumbers
+// src/components/Button.tsx
+import clsx from "clsx";
+import { cn } from "../utils/cn";
+
+type ButtonProps = {
+  type?: "button" | "submit";
+  variant?: "primary" | "secondary" | "danger";
+  children: React.ReactNode;
+  onClick?: () => void;
+};
+
+export const Button = ({
+  type = "button",
+  variant = "primary",
+  children,
+  onClick,
+}: ButtonProps) => {
+  const baseStyles =
+    "px-4 py-2 rounded text-white transition-colors duration-200";
+
+  const variantStyles = cn(
+    variant === "primary" &&
+      "bg-blue-500 hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 focus:ring-offset-white",
+    variant === "secondary" &&
+      "bg-gray-500 hover:bg-gray-700 active:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 focus:ring-offset-gray-200",
+    variant === "danger" &&
+      "bg-red-500 hover:bg-red-700 active:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 focus:ring-offset-red-200"
+  );
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      className={cn(baseStyles, variantStyles)}
+    >
+      {children}
+    </button>
+  );
+};
+```
+
+This `Button` component uses `cn` to dynamically apply Tailwind classes based on the variant prop. It can be reused with different button styles across the app.
+
+## 3. Reusable Input and Text Field Components
+
+Creating a reusable `Input` component allows you to handle different input types while ensuring consistent styling.
+
+```tsx showLineNumbers
+// src/components/Input.tsx
+type InputProps = {
+  type: string;
+  name: string;
+  placeholder?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+};
+
+export const Input = ({
+  type,
+  name,
+  placeholder,
+  value,
+  onChange,
+}: InputProps) => {
+  return (
+    <input
+      type={type}
+      name={name}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      className="border border-gray-300 rounded p-2 w-full focus:outline-none focus:border-blue-500"
+    />
+  );
+};
+```
+
+For a growing `TextArea` component that automatically expands as you type, we can handle the dynamic height using React state:
+
+```tsx showLineNumbers
+// src/components/TextArea.tsx
+import { useState, useRef } from "react";
+
+type TextAreaProps = {
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+};
+
+export const GrowingTextArea = ({ name, value, onChange }: TextAreaProps) => {
+// src/components/GrowingTextArea.tsx
+import React, { useRef, useEffect } from 'react';
+
+type GrowingTextAreaProps = {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+};
+
+export const GrowingTextArea: React.FC<GrowingTextAreaProps> = ({ value, onChange, placeholder }) => {
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (textAreaRef.current) {
+      textAreaRef.current.style.height = 'auto'; // Reset height
+      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`; // Set height to scroll height
+    }
+  }, [value]); // Adjust height whenever value changes
+
+  return (
+    <textarea
+      ref={textAreaRef}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full p-2 border rounded resize-none"
+    />
+  );
+};
+
+```
+
+This `GrowingTextArea` will adjust its height based on the content, providing a smooth user experience when typing long text.
+
+### Example Usage
+
+```tsx showLineNumbers
+// src/App.tsx
+import React, { useState } from "react";
+import { GrowingTextArea } from "./components/GrowingTextArea";
+
+const App: React.FC = () => {
+  const [text, setText] = useState("");
+
+  return (
+    <div className="p-4">
+      <h1 className="text-lg font-semibold">Growing Text Area Example</h1>
+      <GrowingTextArea
+        value={text}
+        onChange={setText}
+        placeholder="Type here..."
+      />
+      <p className="mt-2">Current Length: {text.length}</p>
+    </div>
+  );
+};
+
+export default App;
+```
+
+### How It Works
+
+1. **Dynamic Height Adjustment**: The `GrowingTextArea` component uses a `ref` to reference the `textarea` element. On every render, the component resets the height to `auto` to calculate the necessary height based on the content and then sets the height to the `scrollHeight` of the element. This makes the textarea grow as the user types.
+
+2. **Controlled Component**: The `value` prop and `onChange` handler make the `GrowingTextArea` a controlled component. This means the parent component (like `App`) manages the state of the text area, ensuring that the component can easily reflect changes in the input.
+
+3. **Styling**: The `textarea` includes Tailwind CSS classes for padding, borders, and rounded corners. The `resize-none` class prevents users from manually resizing the textarea, allowing it to grow based on content only.
+
+## 4. Utility Function: `cn` with `clsx` and `tailwind-merge`
+
+One common problem in Tailwind is conflicting or redundant class names. Using `clsx` together with `tailwind-merge` helps resolve this. Here’s a utility function that can be used to merge and clean up class names dynamically.
+
+```tsx showLineNumbers
+// src/utils/cn.ts
+import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export const cn = (...inputs: (string | undefined | null | boolean)[]) => {
+  return twMerge(clsx(...inputs));
+};
+```
+
+## 5. Hook: `useMediaQuery`
+
+For responsive layouts or components, a media query hook can dynamically adapt to screen sizes. Using the `use-media-query` hook from `shadcn` simplifies media queries in React.
+
+```tsx showLineNumbers
+// src/hooks/useMediaQuery.ts
+import { useState, useEffect } from "react";
+
+export const useMediaQuery = (query: string) => {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const mediaQueryList = window.matchMedia(query);
+    const documentChangeHandler = () => setMatches(mediaQueryList.matches);
+
+    mediaQueryList.addEventListener("change", documentChangeHandler);
+    documentChangeHandler(); // Initial check
+
+    return () => {
+      mediaQueryList.removeEventListener("change", documentChangeHandler);
+    };
+  }, [query]);
+
+  return matches;
+};
+```
+
+### Example usage in a component:
+
+```tsx showLineNumbers
+import { useMediaQuery } from "../hooks/useMediaQuery";
+
+const ExampleComponent = () => {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  return <div>{isMobile ? <p>Mobile view</p> : <p>Desktop view</p>}</div>;
+};
+```
+
+### How It Works
+
+1. **Initial Setup**: The hook takes a media query string (e.g., '**(max-width: 600px)**') as an argument and initializes a state variable `matches` to keep track of whether the query matches the current viewport.
+
+2. **Effect Hook**: Inside a `useEffect`, it creates a `MediaQueryList` object using **window.matchMedia(query)**. This object allows you to listen for changes in the media query.
+
+3. **Event Listener**: It defines a `handleChange` function that updates the `matches` state whenever the media query's evaluation changes. The listener is added to the media query list to respond to such changes.
+
+4. **Cleanup**: When the component using this hook unmounts or the query changes, the effect cleans up by removing the event listener to prevent memory leaks.
+
+5. **Return Value**: Finally, the hook returns the current value of `matches`, which can be used to conditionally render components or styles based on whether the media query matches.
+
+## 6. Prevent Image Shrink in Flex Containers
+
+Sometimes, images shrink inside flex containers when their parent uses `flex` properties. To prevent this, you can use the `shrink-0` utility from Tailwind.
+
+```tsx showLineNumbers
+// src/components/Image.tsx
+type ImageProps = {
+  src: string;
+  alt: string;
+};
+
+export const Image = ({ src, alt }: ImageProps) => {
+  return <img src={src} alt={alt} className="w-full h-auto shrink-0" />;
+};
+```
+
+By using `shrink-0`, the image maintains its original size and doesn't shrink, even if it's inside a flex container.
+
+## Conclusion
+
+Creating reusable components and utility functions ensures that your React application remains maintainable and scalable. By leveraging tools like Tailwind CSS, TypeScript, `clsx`, and custom hooks like `use-media-query`, you can easily build flexible and adaptable components that work across various parts of your app.
+
+Try incorporating these reusable components and utilities into your next project to improve code organization and reusability!
