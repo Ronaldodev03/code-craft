@@ -486,6 +486,55 @@ const userWithoutId: UserWithoutId = {
 };
 ```
 
+## Differences between `as` and `satisfies`
+
+In TypeScript, both `as` and `satisfies` are used for type assertions, but they serve different purposes and have distinct use cases.
+
+### 1. `as` keyword: Type Assertion
+
+- **Purpose**: The `as` keyword is used to explicitly tell TypeScript to treat a value as a specific type, even if TypeScript cannot infer that type automatically. Essentially, it forces the compiler to accept that a value is of the asserted type.
+- **Behavior**: `as` does not perform any runtime checks; it's purely a compile-time feature. This means it can override the inferred type, but it can lead to errors if used incorrectly.
+- **Use case**: When you're confident that the value is of a certain type but TypeScript isn't able to determine that automatically.
+
+Syntax:
+
+```tsx showLineNumbers
+const value = someFunction() as SomeType;
+```
+
+Example:
+
+```tsx showLineNumbers
+const value: unknown = "hello";
+const strValue = value as string; // Forces TypeScript to treat value as a string
+```
+
+### 2. `satisfies` keyword: Type Constraint
+
+- **Purpose**: The satisfies keyword checks that a value satisfies a given type but without changing the inferred type. It ensures that the object adheres to the required structure without losing type inference for individual properties.
+- **Behavior**: Unlike `as`, `satisfies` does not change the inferred type of the value. Instead, it ensures that the value conforms to the specified type.
+- **Use case**: When you want to validate that an object conforms to a specific type while preserving more specific inferred types for the value. It’s particularly useful when working with complex objects or narrowing types.
+
+Syntax:
+
+```tsx showLineNumbers
+const value = {
+  key: "someValue",
+} satisfies SomeType;
+```
+
+Example:
+
+```tsx showLineNumbers
+type Person = { name: string; age: number };
+
+const john = {
+  name: "John",
+  age: 30,
+  occupation: "Engineer",
+} satisfies Person; // Ensures john satisfies Person type, but keeps the 'occupation' property
+```
+
 ## Practical Examples
 
 ### Example 1: Managing Complex Form States

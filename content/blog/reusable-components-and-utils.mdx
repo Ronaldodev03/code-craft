@@ -79,6 +79,41 @@ export const Button = ({
 
 This `Button` component uses `cn` to dynamically apply Tailwind classes based on the variant prop. It can be reused with different button styles across the app.
 
+### Extra info: Differences between border, ring, and outline
+
+#### 1. Border:
+
+- **Location**: The `border` is applied directly to the edge of the element's box, inside the element's layout space.
+- **Usage**: It's a permanent feature of the element that affects layout by taking up space.
+
+Example:
+
+```tsx showLineNumbers
+border-2 border-blue-500
+```
+
+#### 2. Ring:
+
+- **Location**: The `ring` is an abstraction provided by Tailwind CSS that applies an extra layer of visual styling outside the element's border, without affecting the layout.
+- **Usage**: Commonly used to provide visual focus indicators, such as adding emphasis when an element is focused or hovered. It doesn't take up space in the layout.
+
+Example:
+
+```tsx showLineNumbers
+ring-2 ring-blue-500
+```
+
+#### 3. Outline:
+
+- **Location**: The `outline` is drawn outside the element's border (and even outside the ring, if applied), but it doesn't affect the element's layout.
+- **Usage**: Typically used for focus states in accessibility scenarios, like keyboard navigation. Outlines don't take up space or alter the element's box model.
+
+Example:
+
+```tsx showLineNumbers
+outline outline-2 outline-red-500
+```
+
 ## 3. Reusable Input and Text Field Components
 
 Creating a reusable `Input` component allows you to handle different input types while ensuring consistent styling.
@@ -276,6 +311,47 @@ export const Image = ({ src, alt }: ImageProps) => {
 ```
 
 By using `shrink-0`, the image maintains its original size and doesn't shrink, even if it's inside a flex container.
+
+## 7. Render Pattern
+
+```tsx showLineNumbers
+type ListComponentProps = {
+  data: any[];
+  renderItem: (item: any) => React.ReactNode;
+};
+
+export default function ListComponent({
+  data,
+  renderItem,
+}: ListComponentProps) {
+  return <div>{data.map((item) => renderItem(item))}</div>;
+}
+```
+
+### Example usage in a component:
+
+```tsx showLineNumbers
+type AppProps = {
+  users: User[];
+};
+
+export default function App({ users }: AppProps) {
+  return (
+    <div>
+      <ListComponent
+        data={users}
+        renderItem={(user) => <UserCard key={user.id} user={user} />}
+      />
+    </div>
+  );
+}
+```
+
+### Breakdown:
+
+- **ListComponent** accepts `data` (an array) and `renderItem` (a function that defines how to display each item).
+- The **renderItem** function is provided when using `ListComponent`, allowing for flexible rendering of any type of data.
+  In the example, `App` passes a list of `users` to `ListComponent`, and for each `user`, it renders a `UserCard` component. This makes the component reusable for different types of data and rendering logic.
 
 ## Conclusion
 
