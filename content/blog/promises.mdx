@@ -71,6 +71,58 @@ fetchData()
   });
 ```
 
+### Example: Promisifying `setTimeout`
+
+```js showLineNumbers
+//const wait = function (seconds) {
+//  return new Promise(function (resolve) {
+//    setTimeout(resolve, seconds * 1000);
+//  });
+//};
+
+const wait = function (seconds) {
+  return new Promise(function (resolve, reject) {
+    setTimeout(() => {
+      if (seconds < 0) {
+        reject(new Error("Invalid time"));
+      } else {
+        resolve();
+      }
+    }, seconds * 1000);
+  });
+};
+
+wait(1)
+  .then(() => {
+    console.log("1 second passed");
+    return wait(1);
+  })
+  .then(() => {
+    console.log("2 second passed");
+    return wait(1);
+  })
+  .then(() => {
+    console.log("3 second passed");
+    return wait(1);
+  })
+  .then(() => console.log("4 second passed"))
+  .catch((err) => console.error(err));
+
+// Approach using callbacks
+// setTimeout(() => {
+//   console.log('1 second passed');
+//   setTimeout(() => {
+//     console.log('2 seconds passed');
+//     setTimeout(() => {
+//       console.log('3 second passed');
+//       setTimeout(() => {
+//         console.log('4 second passed');
+//       }, 1000);
+//     }, 1000);
+//   }, 1000);
+// }, 1000);
+```
+
 ## Advantages of Promises
 
 - **Improved Readability**: Promises simplify the structure of asynchronous code.
@@ -98,6 +150,48 @@ fetchDataWithAsync();
 // Data fetched: { ... } // Assuming successful data retrieval
 // or
 // Error fetching data: Data fetch failed // If fetch operation fails
+```
+
+### Example: Promisifying `setTimeout` with async/await
+
+```js showLineNumbers
+//const wait = function (seconds) {
+//  return new Promise(function (resolve) {
+//    setTimeout(resolve, seconds * 1000);
+//  });
+//};
+
+const wait = function (seconds) {
+  return new Promise(function (resolve, reject) {
+    setTimeout(() => {
+      if (seconds < 0) {
+        reject(new Error("Invalid time"));
+      } else {
+        resolve();
+      }
+    }, seconds * 1000);
+  });
+};
+
+const run = async () => {
+  try {
+    await wait(1);
+    console.log("1 second passed");
+
+    await wait(1);
+    console.log("2 seconds passed");
+
+    await wait(1);
+    console.log("3 seconds passed");
+
+    await wait(1);
+    console.log("4 seconds passed");
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+run();
 ```
 
 ## Handling Multiple Promises with Promise.all()
