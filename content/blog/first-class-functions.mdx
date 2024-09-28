@@ -162,6 +162,42 @@ A closure is created when a function is declared within another function and acc
 
 Closures are powerful because they enable functions to have private variables, maintain state, and encapsulate behavior. In JavaScript, closures are used in many common patterns, including callback functions, event listeners, and module patterns.
 
+### Practical Example: The Module Pattern
+
+The Module Pattern allows you to create public and private data and methods. In this case, the IIFE creates a "module" named ShoppingCart that returns an object exposing only certain methods and properties, making other variables and functions private.
+
+```js showLineNumbers
+const ShoppingCart = (function () {
+  const cart = [];
+  const shippingCost = 10;
+  const totalPrice = 237;
+  const totalQuantity = 23;
+
+  const addToCart = function (product, quantity) {
+    cart.push({ product, quantity });
+    console.log(
+      `${quantity} ${product} added to cart (sipping cost is ${shippingCost})`
+    );
+  };
+
+  const orderStock = function (product, quantity) {
+    console.log(`${quantity} ${product} ordered from supplier`);
+  };
+
+  return {
+    addToCart,
+    cart,
+    totalPrice,
+    totalQuantity,
+  };
+})();
+
+ShoppingCart.addToCart("apple", 4);
+ShoppingCart.addToCart("pizza", 2);
+console.log(ShoppingCart);
+console.log(ShoppingCart.shippingCost);
+```
+
 ### Practical Example: Private Variables and State Maintenance
 
 Closures allow for private variables and state maintenance by keeping certain variables hidden from the outside scope. Here's a common use case for closures: creating a counter with private state:
@@ -249,6 +285,26 @@ bookingApp.createBooking("LH123", undefined, 1000);
 console.log(bookingApp.getBookings());
 // Output: All stored bookings in the array
 ```
+
+### Another Example: One Function Call
+
+```js showLineNumbers
+function once(fn) {
+  let called = false;
+  let result;
+
+  return function (...args) {
+    if (!called) {
+      called = true;
+      result = fn(...args);
+      return result;
+    }
+    return undefined;
+  };
+}
+```
+
+The `once` function is a higher-order function that ensures that a given function (`fn`) can only be executed once. After the first call, any subsequent attempts to invoke the function will not execute it again; instead, it will return `undefined`.
 
 ### Asynchronous Behavior with Closures
 
