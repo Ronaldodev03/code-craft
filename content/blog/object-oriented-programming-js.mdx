@@ -1,0 +1,357 @@
+---
+title: Understanding Object-Oriented Programming (OOP) in JavaScript
+description: Learn how to build scalable and modular code using essential OOP concepts like encapsulation, inheritance, polymorphism, and abstraction. You'll understand how to create and manage objects, work with classes, and leverage JavaScript’s prototype-based inheritance.
+date: 2024-08-15
+tags: ["JavaScript", "ES6", "classes"]
+published: true
+---
+
+_Object-Oriented Programming_ (OOP) is a widely-used paradigm in software development that organizes code into objects, which represent entities with both **data** (properties) and **behavior** (methods). In this article, we’ll explore how JavaScript implements OOP and how you can leverage this paradigm to write modular, maintainable, and reusable code.
+
+## What is Object-Oriented Programming (OOP)?
+
+OOP is a programming model based on the concept of objects. These objects can contain data, known as properties, and code, in the form of methods, which represent the behavior associated with the object.
+
+The key principles of OOP are:
+
+1. **Encapsulation**: Bundling data (properties) and methods (functions) together inside an object.
+2. **Inheritance**: The ability to create new classes based on existing ones, inheriting their properties and behaviors.
+3. **Polymorphism**: Objects of different types can be accessed through the same interface, with each object responding differently to the same method call.
+4. **Abstraction**: Hiding complex implementation details and exposing only the necessary functionality.
+
+## JavaScript and OOP
+
+JavaScript supports OOP principles but with some distinctions. Unlike languages such as Java or C++, which are class-based, JavaScript is prototype-based. However, since ES6, JavaScript introduced the `class` keyword, allowing developers to write class-based OOP code in a more familiar style.
+
+Let’s dive into how OOP concepts work in JavaScript.
+
+### Creating Classes and Objects
+
+Before ES6, JavaScript used constructor functions to define objects. With ES6, you can use the `class` syntax to define classes:
+
+```js showLineNumbers
+class Person {
+  constructor(name, age) {
+    this.name = name; // Properties
+    this.age = age;
+  }
+
+  // Method
+  greet() {
+    console.log(
+      `Hello, my name is ${this.name} and I am ${this.age} years old.`
+    );
+  }
+}
+
+const person1 = new Person("John", 30); // Create an instance of the class
+person1.greet(); // Output: Hello, my name is John and I am 30 years old.
+```
+
+In the example above:
+
+- The `Person` class has a `constructor()` method that initializes the object’s properties (`name` and `age`).
+- The `greet()` method is defined inside the class and can be called on instances of the class.
+
+### Encapsulation in JavaScript
+
+Encapsulation is the practice of restricting access to certain properties or methods. In JavaScript, before ES2020, there was no true way to make properties private, but developers used conventions (like prefixing variables with underscores) to signal that they should not be accessed directly.
+
+Since ES2020, JavaScript supports private fields using the `#` syntax:
+
+```js showLineNumbers
+class BankAccount {
+  #balance = 0; // Private property
+
+  constructor(owner) {
+    this.owner = owner;
+  }
+
+  deposit(amount) {
+    this.#balance += amount;
+    console.log(`${amount} deposited. New balance: ${this.#balance}`);
+  }
+
+  getBalance() {
+    return this.#balance;
+  }
+}
+
+const account = new BankAccount("Alice");
+account.deposit(100); // Output: 100 deposited. New balance: 100
+console.log(account.getBalance()); // Output: 100
+// console.log(account.#balance); // Error: Private field '#balance' must be declared in an enclosing class
+```
+
+In this example, the `#balance` field is private, meaning it can only be accessed or modified from within the `BankAccount` class, not from the outside.
+
+### Inheritance
+
+Inheritance allows a class (child class) to inherit properties and methods from another class (parent class). In JavaScript, you can use the `extends` keyword to create a subclass:
+
+```js showLineNumbers
+class Animal {
+  constructor(name) {
+    this.name = name;
+  }
+
+  makeSound() {
+    console.log(`${this.name} makes a sound.`);
+  }
+}
+
+class Dog extends Animal {
+  constructor(name, breed) {
+    super(name); // Call the parent constructor
+    this.breed = breed;
+  }
+
+  makeSound() {
+    console.log(`${this.name}, the ${this.breed}, barks.`);
+  }
+}
+
+const dog1 = new Dog("Rex", "Golden Retriever");
+dog1.makeSound(); // Output: Rex, the Golden Retriever, barks.
+```
+
+In the above code:
+
+- The `Dog` class extends the `Animal` class, inheriting its properties and methods.
+- The `super()` function calls the constructor of the parent class.
+
+### Polymorphism
+
+Polymorphism means that different classes can be treated as instances of the same class through inheritance. In JavaScript, subclasses can override methods from the parent class, providing their own implementation.
+
+```js showLineNumbers
+class Shape {
+  area() {
+    return 0;
+  }
+}
+
+class Circle extends Shape {
+  constructor(radius) {
+    super();
+    this.radius = radius;
+  }
+
+  area() {
+    return Math.PI * this.radius ** 2;
+  }
+}
+
+class Rectangle extends Shape {
+  constructor(width, height) {
+    super();
+    this.width = width;
+    this.height = height;
+  }
+
+  area() {
+    return this.width * this.height;
+  }
+}
+
+const shapes = [new Circle(5), new Rectangle(4, 6)];
+
+shapes.forEach((shape) => {
+  console.log(`Area: ${shape.area()}`);
+});
+// Output:
+// Area: 78.53981633974483
+// Area: 24
+```
+
+Here, both `Circle` and `Rectangle` are subclasses of `Shape`. Although they have different implementations of the `area()` method, we can call `area()` on any shape, and the correct implementation will be invoked.
+
+### Abstraction
+
+Abstraction in JavaScript is typically achieved by using interfaces or abstract classes in other languages, but JavaScript does not have built-in support for abstract classes. However, you can simulate abstraction by creating methods that throw errors when not implemented by derived classes:
+
+```js showLineNumbers
+class Vehicle {
+  startEngine() {
+    throw new Error("Method 'startEngine()' must be implemented.");
+  }
+}
+
+class Car extends Vehicle {
+  startEngine() {
+    console.log("Engine started!");
+  }
+}
+
+const car = new Car();
+car.startEngine(); // Output: Engine started!
+// const vehicle = new Vehicle();
+// vehicle.startEngine();  // Throws an error: Method 'startEngine()' must be implemented.
+```
+
+In this example, `startEngine()` in the `Vehicle` class throws an error if it's not overridden by a subclass.
+
+## Prototype-based OOP in JavaScript
+
+While the `class` syntax provides a cleaner way to write OOP code, JavaScript still relies on prototypes under the hood. Every object in JavaScript has a hidden `[[Prototype]]` object, which allows for inheritance. This is what powers JavaScript’s prototype chain.
+
+```js showLineNumbers
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+
+Person.prototype.greet = function () {
+  console.log(`Hello, my name is ${this.name} and I am ${this.age} years old.`);
+};
+
+const person2 = new Person("Alice", 25);
+person2.greet(); // Output: Hello, my name is Alice and I am 25 years old.
+```
+
+In this case, the `greet` method is defined on `Person.prototype`, meaning all instances of `Person` share the same method. This is how OOP was traditionally implemented before ES6.
+
+### Prototypal Inheritance
+
+Prototypal inheritance allows objects to inherit properties and methods from other objects. JavaScript uses prototype chains to share functionality between objects.
+
+In JavaScript, every object has a hidden internal property called `[[Prototype]]`, which is a reference to another object. When you try to access a property or method on an object, the JavaScript engine first checks if the property exists on the object itself. If it doesn't, it looks up the `[[Prototype]]` chain to find the property in the prototype object. This process continues up the chain until the property is found or until it reaches `null` (the end of the chain).
+
+#### How Prototypal Inheritance Works
+
+Let’s break down prototypal inheritance with a simple example:
+
+```js showLineNumbers
+const animal = {
+  sound() {
+    console.log("Generic animal sound.");
+  },
+};
+
+const dog = Object.create(animal); // Create a new object with animal as its prototype
+dog.sound(); // Output: Generic animal sound.
+```
+
+In the code above:
+
+- The `dog` object doesn't have its own `sound()` method.
+- When `dog.sound()` is called, JavaScript looks at `dog` and sees that `sound()` doesn't exist there.
+- It then checks dog's prototype (which is `animal`), finds `sound()`, and invokes it.
+
+This is prototypal inheritance in action. The `dog` object "inherits" from `animal` through the prototype chain.
+
+#### Modifying the Prototype
+
+You can also add or modify properties and methods on the prototype, and all objects inheriting from that prototype will gain access to the new or updated properties.
+
+```js showLineNumbers
+animal.eat = function () {
+  console.log("The animal is eating.");
+};
+
+dog.eat(); // Output: The animal is eating.
+```
+
+In this case, we add the `eat()` method to the `animal` object, and since `dog` inherits from `animal`, it can now use the `eat()` method as well.
+
+#### `Object.create()` and `[[Prototype]]`
+
+The `Object.create()` method allows you to create a new object with a specific prototype. This is a key mechanism for implementing prototypal inheritance:
+
+```js showLineNumbers
+const car = {
+  wheels: 4,
+  drive() {
+    console.log("The car is driving.");
+  },
+};
+
+const sportsCar = Object.create(car);
+console.log(sportsCar.wheels); // Output: 4
+sportsCar.drive(); // Output: The car is driving.
+```
+
+Here, `sportsCar` inherits properties from `car`. The prototype of `sportsCar` is `car`, so if `sportsCar` doesn’t have a `wheels` property of its own, it looks up the prototype chain to find it in `car`.
+
+#### The `prototype` Property and `__proto__`
+
+In JavaScript, functions (which can be constructors) have a special property called `prototype`. This property is not to be confused with the `[[Prototype]]` internal slot of objects. Every time you create a new object using a constructor function, the `prototype` property of the function becomes the `[[Prototype]]` of the created object.
+
+```js showLineNumbers
+function Person(name) {
+  this.name = name;
+}
+
+Person.prototype.greet = function () {
+  console.log(`Hi, I'm ${this.name}`);
+};
+
+const person1 = new Person("John");
+person1.greet(); // Output: Hi, I'm John
+```
+
+Here’s how it works:
+
+- `Person.prototype` is an object that will become the prototype of all objects created by the `Person` constructor.
+- `person1` has a `[[Prototype]]` link to `Person.prototype`, which is why it can access the `greet()` method.
+
+Another way to access an object's prototype is via the `__proto__` property, although this is not recommended for performance reasons and should be avoided in production code:
+
+```js showLineNumbers
+console.log(person1.__proto__ === Person.prototype); // Output: true
+```
+
+#### Extending Built-in Objects
+
+One of the powerful features of prototypal inheritance is the ability to extend built-in objects like `Array`, `Object`, or `Date`. For example, you can add custom methods to `Array.prototype` so that all arrays in your code will have access to the new methods:
+
+```js showLineNumbers
+Array.prototype.first = function () {
+  return this[0];
+};
+
+const arr = [1, 2, 3];
+console.log(arr.first()); // Output: 1
+```
+
+Here, `first()` is added to `Array.prototype`, meaning all arrays in your JavaScript environment now have access to this method.
+
+#### Prototype Chain
+
+The prototype chain is the mechanism by which JavaScript objects inherit properties and methods from one another. When you access a property or method on an object, JavaScript will follow the prototype chain until it either finds the property or reaches the end of the chain (`null`).
+
+Let's look at an example:
+
+```js showLineNumbers
+const grandparent = { hairColor: "black" };
+const parent = Object.create(grandparent);
+const child = Object.create(parent);
+
+console.log(child.hairColor); // Output: black
+```
+
+Here’s what happens:
+
+- `child` doesn't have `hairColor`, so JavaScript looks in child's prototype, which is parent.
+- `parent` also doesn’t have `hairColor`, so it looks in parent's prototype, which is grandparent.
+- Finally, `grandparent` has the `hairColor` property, so it returns "**black**".
+
+#### Pros and Cons of Prototypal Inheritance
+
+**Pros**:
+
+- **Flexibility**: Prototypal inheritance allows you to share methods and properties among objects without the rigid structure of class-based inheritance.
+- **Efficient Memory Usage**: Shared methods on the prototype are only stored once, reducing memory overhead.
+- **Dynamic Extensions**: You can modify prototypes at runtime, adding or changing properties and methods on the fly.
+
+**Cons**:
+
+- **Potential Performance Issues**: Traversing the prototype chain can impact performance, especially with deep chains.
+- **Confusion with `this` and `prototype`**: The use of `this`, `prototype`, and `__proto__` can be confusing for developers coming from class-based OOP languages.
+- **Harder to Debug**: Prototype chains can make it harder to trace where a property or method is coming from.
+
+## Conclusion
+
+JavaScript offers a flexible approach to Object-Oriented Programming, allowing developers to use both class-based and prototype-based OOP styles. Mastering OOP principles in JavaScript helps you write more structured and maintainable code, making it easier to scale applications as they grow.
+
+Prototypal inheritance is one of JavaScript's most distinctive and powerful features. It allows objects to inherit from other objects, making it easier to share properties and methods. Understanding how prototypes work under the hood is crucial for mastering JavaScript, as it provides a foundation for working with more advanced concepts like ES6 classes, which are syntactic sugar over prototypal inheritance.

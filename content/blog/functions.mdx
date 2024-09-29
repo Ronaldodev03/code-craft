@@ -458,6 +458,32 @@ const person1 = new Person("Alice", 25);
 console.log(person1); // Outputs: Person { name: 'Alice', age: 25 }
 ```
 
+With ES5, you can define methods using function constructors and the this keyword.
+
+```js showLineNumbers
+function Person(name) {
+  this.name = name;
+  this.greet = function () {
+    console.log(`Hello, my name is ${this.name}`);
+  };
+}
+const alice = new Person("Alice");
+alice.greet(); // Output: Hello, my name is Alice
+```
+
+To avoid method duplication for each instance, you can define methods on the constructor's prototype.
+
+```js showLineNumbers
+function Person(name) {
+  this.name = name;
+}
+Person.prototype.greet = function () {
+  console.log(`Hello, my name is ${this.name}`);
+};
+const bob = new Person("Bob");
+bob.greet(); // Output: Hello, my name is Bob
+```
+
 ## Conclusion
 
 Understanding the differences between regular and arrow functions, as well as the nuances of `this`, is essential in mastering JavaScript. Additionally, knowing how to manipulate `this` using `call`, `apply`, and `bind` gives you greater control over function execution in different contexts. Keep practicing with these concepts, and you'll see how they improve your JavaScript coding skills!
