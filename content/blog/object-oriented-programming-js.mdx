@@ -213,93 +213,159 @@ In this case, the `greet` method is defined on `Person.prototype`, meaning all i
 
 ### Prototypal Inheritance
 
-Prototypal inheritance allows objects to inherit properties and methods from other objects. JavaScript uses prototype chains to share functionality between objects.
+In JavaScript, objects can inherit properties and methods from other objects. This inheritance is achieved through a mechanism called prototypal inheritance. Every object in JavaScript has an internal property called `[[Prototype]]`, which points to another object. This object is called the **prototype**. When you try to access a property or method on an object, JavaScript will first look for it on the object itself. If it doesn't find it there, it will follow the `[[Prototype]]` link and look for the property on the prototype object. This process continues up the prototype chain until the property is found or until the chain ends (with `null`).
 
-In JavaScript, every object has a hidden internal property called `[[Prototype]]`, which is a reference to another object. When you try to access a property or method on an object, the JavaScript engine first checks if the property exists on the object itself. If it doesn't, it looks up the `[[Prototype]]` chain to find the property in the prototype object. This process continues up the chain until the property is found or until it reaches `null` (the end of the chain).
+#### `__proto__` vs `[[Prototype]]`
 
-#### How Prototypal Inheritance Works
+- `[[Prototype]]`: This is the internal, hidden property of every object that points to its prototype. This internal link is not directly accessible or visible in the code but is conceptually referred to as `[[Prototype]]` in JavaScript documentation.
 
-Let’s break down prototypal inheritance with a simple example:
+- `__proto__`: This is a publicly accessible property that points to the object's `[[Prototype]]`. It allows developers to manually access and manipulate the prototype chain. While it’s not recommended to modify `__proto__ `directly in production code, it’s a useful tool for understanding how inheritance works in JavaScript.
 
-```js showLineNumbers
-const animal = {
-  sound() {
-    console.log("Generic animal sound.");
-  },
-};
+#### Example of Prototypal Inheritance
 
-const dog = Object.create(animal); // Create a new object with animal as its prototype
-dog.sound(); // Output: Generic animal sound.
-```
-
-In the code above:
-
-- The `dog` object doesn't have its own `sound()` method.
-- When `dog.sound()` is called, JavaScript looks at `dog` and sees that `sound()` doesn't exist there.
-- It then checks dog's prototype (which is `animal`), finds `sound()`, and invokes it.
-
-This is prototypal inheritance in action. The `dog` object "inherits" from `animal` through the prototype chain.
-
-#### Modifying the Prototype
-
-You can also add or modify properties and methods on the prototype, and all objects inheriting from that prototype will gain access to the new or updated properties.
+Let’s go through an example to make this clearer.
 
 ```js showLineNumbers
-animal.eat = function () {
-  console.log("The animal is eating.");
-};
-
-dog.eat(); // Output: The animal is eating.
-```
-
-In this case, we add the `eat()` method to the `animal` object, and since `dog` inherits from `animal`, it can now use the `eat()` method as well.
-
-#### `Object.create()` and `[[Prototype]]`
-
-The `Object.create()` method allows you to create a new object with a specific prototype. This is a key mechanism for implementing prototypal inheritance:
-
-```js showLineNumbers
-const car = {
-  wheels: 4,
-  drive() {
-    console.log("The car is driving.");
-  },
-};
-
-const sportsCar = Object.create(car);
-console.log(sportsCar.wheels); // Output: 4
-sportsCar.drive(); // Output: The car is driving.
-```
-
-Here, `sportsCar` inherits properties from `car`. The prototype of `sportsCar` is `car`, so if `sportsCar` doesn’t have a `wheels` property of its own, it looks up the prototype chain to find it in `car`.
-
-#### The `prototype` Property and `__proto__`
-
-In JavaScript, functions (which can be constructors) have a special property called `prototype`. This property is not to be confused with the `[[Prototype]]` internal slot of objects. Every time you create a new object using a constructor function, the `prototype` property of the function becomes the `[[Prototype]]` of the created object.
-
-```js showLineNumbers
-function Person(name) {
+function Animal(name) {
   this.name = name;
 }
 
-Person.prototype.greet = function () {
-  console.log(`Hi, I'm ${this.name}`);
+Animal.prototype.speak = function () {
+  console.log(`${this.name} makes a noise.`);
 };
 
-const person1 = new Person("John");
-person1.greet(); // Output: Hi, I'm John
+const dog = new Animal("Rex");
+dog.speak(); // Output: Rex makes a noise.
 ```
 
-Here’s how it works:
+1. **The Constructor Function**: `Animal` is a constructor function. When you call `new Animal()`, it creates a new object (`dog`) with the following steps:
 
-- `Person.prototype` is an object that will become the prototype of all objects created by the `Person` constructor.
-- `person1` has a `[[Prototype]]` link to `Person.prototype`, which is why it can access the `greet()` method.
+   - A new object is created, with its `__proto__` pointing to `Animal.prototype`.
+   - The constructor `Animal` is called with `this` bound to the new object.
+   - The `name` property is assigned to the new object.
+   - The newly created object is returned.
 
-Another way to access an object's prototype is via the `__proto__` property, although this is not recommended for performance reasons and should be avoided in production code:
+2. **`Animal.prototype`**: The `Animal` constructor function has a `prototype` property. This object contains methods like `speak` that can be shared among all instances of `Animal`.
+
+3. **`__proto__` on Instances**: The `dog` object has an internal `[[Prototype]]`, which is the same as `Animal.prototype`. When you call `dog.speak()`, JavaScript first looks for the `speak` method on the dog object. Since `dog` doesn’t have a `speak` method, it follows the `__proto__` link (which points to `Animal.prototype`) and finds the method there.
+
+#### Prototype Chain
+
+Here’s a breakdown of the lookup process when you try to access a property or method on an object:
+
+1. **Own Properties**: JavaScript first checks if the property exists directly on the object itself.
+2. **Prototype Chain**: If the property is not found on the object, JavaScript checks the object's `[[Prototype]]` (accessed via `__proto__`).
+3. **Continue Up the Chain**: If the property is not found on the prototype, it checks the next object in the chain, and so on, until it reaches the end (where `__proto__` is `null`).
+
+#### Another example
 
 ```js showLineNumbers
-console.log(person1.__proto__ === Person.prototype); // Output: true
+const Person = function (firstName, birthYear) {
+  this.firstName = firstName;
+  this.birthYear = birthYear;
+};
+
+const jonas = new Person("Jonas", 1991);
+
+Person.prototype.calcAge = function () {
+  console.log(2037 - this.birthYear);
+};
+
+console.log(jonas.__proto__); // Output 1
+console.log(jonas.prototype); // Output 2
+console.log(Person.prototype); // Output 3
+console.log(jonas.__proto__ === Person.prototype); // Output 4
+console.log(Person.prototype.isPrototypeOf(jonas)); // Output 5
+console.log(Person.prototype.isPrototypeOf(Person)); // Output 6
 ```
+
+1. `console.log(jonas.__proto__)`
+
+   - **Output**: This will print the `Person.prototype` object, because the **proto** of `jonas` is set to the prototype of `Person`. It will look something like:
+
+```js showLineNumbers
+{
+  calcAge: function() { ... }
+}
+```
+
+2. `console.log(jonas.prototype)`
+
+   - **Output**: `undefined`. The `jonas` object is an instance, not a constructor function, so it does not have a `prototype` property. Only constructor functions have a `prototype`.
+
+3. `console.log(Person.prototype)`
+
+   - **Output**: This will log the `Person.prototype` object, which contains the method `calcAge` you defined earlier. The output will be similar to:
+
+```js showLineNumbers
+{
+  calcAge: function() { ... }
+}
+```
+
+4. `console.log(jonas.__proto__ === Person.prototype)`
+
+   - **Output**: `true`. This confirms that the **proto** of `jonas` (the instance) points to the `Person.prototype` object, as expected in JavaScript's prototypal inheritance.
+
+5. `Person.prototype.isPrototypeOf(jonas)`
+
+   - **Output**: `true`. `Person.prototype` is indeed the prototype of the `jonas` object, because `jonas` was created using the Person constructor.
+
+6. `console.log(Person.prototype.isPrototypeOf(Person))`
+
+   - **Output**: false.: The `Person` constructor function itself does not have its prototype linked to `Person.prototype`. Instead, `Person` is a function and its prototype chain is linked to the Function.prototype. So, `Person.prototype` is not the prototype of the `Person` constructor itself.
+
+#### let's keep diving deep into it
+
+```js showLineNumbers
+// Prototypal Inheritance on Built-In Objects
+console.log(jonas.__proto__); // Output 1
+console.log(jonas.__proto__.__proto__); // Output 2
+console.log(jonas.__proto__.__proto__.__proto__); // Output 3
+
+console.log(Person.prototype.constructor); // Output 4
+
+const arr = [3, 6, 6, 5, 6, 9, 9]; // new Array === []
+console.log(arr.__proto__); // Output 5
+console.log(arr.__proto__ === Array.prototype); // Output 6
+
+console.log(arr.__proto__.__proto__); // Output 7
+```
+
+1. `console.log(jonas.__proto__)`
+
+   - **Output**: `Person.prototype`.
+   - **Explanation**: jonas is an instance of the Person constructor function. Therefore, `jonas.__proto__` points to `Person.prototype`.
+
+2. `console.log(jonas.__proto__.__proto__)`
+
+   - **Output**: `Object.prototype`.
+   - **Explanation**: `Person.prototype` itself is an object, and all objects in JavaScript inherit from `Object.prototype`. So, `jonas.__proto__.__proto__` points to `Object.prototype`.
+
+3. `console.log(jonas.__proto__.__proto__.__proto__)`
+
+   - **Output**: `null`.
+   - **Explanation**: `Object.prototype` is the top of the prototype chain, and it does not have its own prototype. So, `jonas.__proto__.__proto__.__proto__` is `null`.
+
+4. `console.log(Person.prototype.constructor)`
+
+   - **Output**: `Person`.
+   - **Explanation**: The constructor property of `Person.prototype` points back to the Person function itself. This is how JavaScript maintains a reference to the constructor function from an object's prototype.
+
+5. `console.log(arr.__proto__)`
+
+   - **Output**: `Array.prototype`.
+   - **Explanation**: `arr` is an array, and all arrays in JavaScript inherit from `Array.prototype`. So, `arr.__proto__`points to`Array.prototype`.
+
+6. `console.log(arr.__proto__ === Array.prototype)`
+
+   - **Output**: `true`.
+   - **Explanation**: This confirms that `arr.__proto__` is indeed `Array.prototype`, meaning the array `arr` inherits its methods (like `push`, `map`, `filter`) from `Array.prototype`.
+
+7. `console.log(arr.__proto__.__proto__)`
+
+- **Output**: `Object.prototype`.
+- **Explanation**: `Array.prototype` itself is an object, and as with all objects, it inherits from `Object.prototype`. So, `arr.__proto__.__proto__` points to `Object.prototype`.
 
 #### Extending Built-in Objects
 
@@ -315,40 +381,6 @@ console.log(arr.first()); // Output: 1
 ```
 
 Here, `first()` is added to `Array.prototype`, meaning all arrays in your JavaScript environment now have access to this method.
-
-#### Prototype Chain
-
-The prototype chain is the mechanism by which JavaScript objects inherit properties and methods from one another. When you access a property or method on an object, JavaScript will follow the prototype chain until it either finds the property or reaches the end of the chain (`null`).
-
-Let's look at an example:
-
-```js showLineNumbers
-const grandparent = { hairColor: "black" };
-const parent = Object.create(grandparent);
-const child = Object.create(parent);
-
-console.log(child.hairColor); // Output: black
-```
-
-Here’s what happens:
-
-- `child` doesn't have `hairColor`, so JavaScript looks in child's prototype, which is parent.
-- `parent` also doesn’t have `hairColor`, so it looks in parent's prototype, which is grandparent.
-- Finally, `grandparent` has the `hairColor` property, so it returns "**black**".
-
-#### Pros and Cons of Prototypal Inheritance
-
-**Pros**:
-
-- **Flexibility**: Prototypal inheritance allows you to share methods and properties among objects without the rigid structure of class-based inheritance.
-- **Efficient Memory Usage**: Shared methods on the prototype are only stored once, reducing memory overhead.
-- **Dynamic Extensions**: You can modify prototypes at runtime, adding or changing properties and methods on the fly.
-
-**Cons**:
-
-- **Potential Performance Issues**: Traversing the prototype chain can impact performance, especially with deep chains.
-- **Confusion with `this` and `prototype`**: The use of `this`, `prototype`, and `__proto__` can be confusing for developers coming from class-based OOP languages.
-- **Harder to Debug**: Prototype chains can make it harder to trace where a property or method is coming from.
 
 ## Conclusion
 
