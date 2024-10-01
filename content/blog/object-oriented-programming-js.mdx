@@ -263,9 +263,7 @@ console.log(Person.prototype.isPrototypeOf(jonas)); // Output 5
 console.log(Person.prototype.isPrototypeOf(Person)); // Output 6
 ```
 
-1. `console.log(jonas.__proto__)`
-
-   - **Output**: This will print the `Person.prototype` object, because the **proto** of `jonas` is set to the prototype of `Person`. It will look something like:
+- **Output 1**: This will print the `Person.prototype` object, because the **proto** of `jonas` is set to the prototype of `Person`. It will look something like:
 
 ```js showLineNumbers
 {
@@ -273,13 +271,9 @@ console.log(Person.prototype.isPrototypeOf(Person)); // Output 6
 }
 ```
 
-2. `console.log(jonas.prototype)`
+- **Output 2**: `undefined`. The `jonas` object is an instance, not a constructor function, so it does not have a `prototype` property. Only constructor functions have a `prototype`.
 
-   - **Output**: `undefined`. The `jonas` object is an instance, not a constructor function, so it does not have a `prototype` property. Only constructor functions have a `prototype`.
-
-3. `console.log(Person.prototype)`
-
-   - **Output**: This will log the `Person.prototype` object, which contains the method `calcAge` you defined earlier. The output will be similar to:
+- **Output 3**: This will log the `Person.prototype` object, which contains the method `calcAge` you defined earlier. The output will be similar to:
 
 ```js showLineNumbers
 {
@@ -287,17 +281,11 @@ console.log(Person.prototype.isPrototypeOf(Person)); // Output 6
 }
 ```
 
-4. `console.log(jonas.__proto__ === Person.prototype)`
+- **Output 4**: `true`. This confirms that the **proto** of `jonas` (the instance) points to the `Person.prototype` object, as expected in JavaScript's prototypal inheritance.
 
-   - **Output**: `true`. This confirms that the **proto** of `jonas` (the instance) points to the `Person.prototype` object, as expected in JavaScript's prototypal inheritance.
+- **Output 5**: `true`. `Person.prototype` is indeed the prototype of the `jonas` object, because `jonas` was created using the Person constructor.
 
-5. `Person.prototype.isPrototypeOf(jonas)`
-
-   - **Output**: `true`. `Person.prototype` is indeed the prototype of the `jonas` object, because `jonas` was created using the Person constructor.
-
-6. `console.log(Person.prototype.isPrototypeOf(Person))`
-
-   - **Output**: false.: The `Person` constructor function itself does not have its prototype linked to `Person.prototype`. Instead, `Person` is a function and its prototype chain is linked to the Function.prototype. So, `Person.prototype` is not the prototype of the `Person` constructor itself.
+- **Output 6**: `false`. The `Person` constructor function itself does not have its prototype linked to `Person.prototype`. Instead, `Person` is a function and its prototype chain is linked to the Function.prototype. So, `Person.prototype` is not the prototype of the `Person` constructor itself.
 
 #### let's keep diving deep into it
 
@@ -316,40 +304,19 @@ console.log(arr.__proto__ === Array.prototype); // Output 6
 console.log(arr.__proto__.__proto__); // Output 7
 ```
 
-1. `console.log(jonas.__proto__)`
+- **Output 1**: `Person.prototype`. **Explanation**: `jonas` is an instance of the Person constructor function. Therefore, `jonas.__proto__` points to `Person.prototype`.
 
-   - **Output**: `Person.prototype`.
-   - **Explanation**: jonas is an instance of the Person constructor function. Therefore, `jonas.__proto__` points to `Person.prototype`.
+- **Output 2**: `Object.prototype`. **Explanation**: `Person.prototype` itself is an object, and all objects in JavaScript inherit from `Object.prototype`. So, `jonas.__proto__.__proto__` points to `Object.prototype`.
 
-2. `console.log(jonas.__proto__.__proto__)`
+- **Output 3**: `null`. **Explanation**: `Object.prototype` is the top of the prototype chain, and it does not have its own prototype. So, `jonas.__proto__.__proto__.__proto__` is `null`.
 
-   - **Output**: `Object.prototype`.
-   - **Explanation**: `Person.prototype` itself is an object, and all objects in JavaScript inherit from `Object.prototype`. So, `jonas.__proto__.__proto__` points to `Object.prototype`.
+- **Output 4**: `Person`. **Explanation**: The constructor property of `Person.prototype` points back to the Person function itself. This is how JavaScript maintains a reference to the constructor function from an object's prototype.
 
-3. `console.log(jonas.__proto__.__proto__.__proto__)`
+- **Output 5**: `Array.prototype`. **Explanation**: `arr` is an array, and all arrays in JavaScript inherit from `Array.prototype`. So, `arr.__proto__`points to`Array.prototype`.
 
-   - **Output**: `null`.
-   - **Explanation**: `Object.prototype` is the top of the prototype chain, and it does not have its own prototype. So, `jonas.__proto__.__proto__.__proto__` is `null`.
+- **Output 6**: `true`. **Explanation**: This confirms that `arr.__proto__` is indeed `Array.prototype`, meaning the array `arr` inherits its methods (like `push`, `map`, `filter`) from `Array.prototype`.
 
-4. `console.log(Person.prototype.constructor)`
-
-   - **Output**: `Person`.
-   - **Explanation**: The constructor property of `Person.prototype` points back to the Person function itself. This is how JavaScript maintains a reference to the constructor function from an object's prototype.
-
-5. `console.log(arr.__proto__)`
-
-   - **Output**: `Array.prototype`.
-   - **Explanation**: `arr` is an array, and all arrays in JavaScript inherit from `Array.prototype`. So, `arr.__proto__`points to`Array.prototype`.
-
-6. `console.log(arr.__proto__ === Array.prototype)`
-
-   - **Output**: `true`.
-   - **Explanation**: This confirms that `arr.__proto__` is indeed `Array.prototype`, meaning the array `arr` inherits its methods (like `push`, `map`, `filter`) from `Array.prototype`.
-
-7. `console.log(arr.__proto__.__proto__)`
-
-- **Output**: `Object.prototype`.
-- **Explanation**: `Array.prototype` itself is an object, and as with all objects, it inherits from `Object.prototype`. So, `arr.__proto__.__proto__` points to `Object.prototype`.
+- **Output 7**: `Object.prototype`. **Explanation**: `Array.prototype` itself is an object, and as with all objects, it inherits from `Object.prototype`. So, `arr.__proto__.__proto__` points to `Object.prototype`.
 
 <Image
   className="mx-auto"
