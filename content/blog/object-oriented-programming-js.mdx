@@ -195,22 +195,6 @@ In this example, `startEngine()` in the `Vehicle` class throws an error if it's 
 
 While the `class` syntax provides a cleaner way to write OOP code, JavaScript still relies on prototypes under the hood. Every object in JavaScript has a hidden `[[Prototype]]` object, which allows for inheritance. This is what powers JavaScript’s prototype chain.
 
-```js showLineNumbers
-function Person(name, age) {
-  this.name = name;
-  this.age = age;
-}
-
-Person.prototype.greet = function () {
-  console.log(`Hello, my name is ${this.name} and I am ${this.age} years old.`);
-};
-
-const person2 = new Person("Alice", 25);
-person2.greet(); // Output: Hello, my name is Alice and I am 25 years old.
-```
-
-In this case, the `greet` method is defined on `Person.prototype`, meaning all instances of `Person` share the same method. This is how OOP was traditionally implemented before ES6.
-
 ### Prototypal Inheritance
 
 In JavaScript, objects can inherit properties and methods from other objects. This inheritance is achieved through a mechanism called prototypal inheritance. Every object in JavaScript has an internal property called `[[Prototype]]`, which points to another object. This object is called the **prototype**. When you try to access a property or method on an object, JavaScript will first look for it on the object itself. If it doesn't find it there, it will follow the `[[Prototype]]` link and look for the property on the prototype object. This process continues up the prototype chain until the property is found or until the chain ends (with `null`).
@@ -366,6 +350,22 @@ console.log(arr.__proto__.__proto__); // Output 7
 
 - **Output**: `Object.prototype`.
 - **Explanation**: `Array.prototype` itself is an object, and as with all objects, it inherits from `Object.prototype`. So, `arr.__proto__.__proto__` points to `Object.prototype`.
+
+<Image
+  className="mx-auto"
+  src="/oop-js-01.png"
+  alt="JavaScript Promises"
+  width={700}
+  height={500}
+/>
+
+<Image
+  className="mx-auto"
+  src="/oop-js-02.png"
+  alt="JavaScript Promises"
+  width={700}
+  height={500}
+/>
 
 #### Extending Built-in Objects
 
