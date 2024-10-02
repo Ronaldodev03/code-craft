@@ -118,6 +118,175 @@ const FocusInput: React.FC = () => {
 };
 ```
 
+### 4. `useRef`
+
+`useRef` is a hook in React that allows you to create a **mutable reference** that persists across renders without triggering re-renders. It's commonly used to access and manipulate DOM elements directly or to store mutable values that don’t need to re-render the component when changed.
+
+**Key Characteristics of `useRef`:**
+
+- **Mutable object**: It provides a `.current` property that can be read or updated directly.
+- **Persistent between renders**: The value inside the ref does not get reset when the component re-renders.
+- **No re-render**: Unlike state, changing the value of a ref (i.e., `.current`) does not cause the component to re-render.
+- **Common use cases**: Accessing and manipulating DOM elements, storing timeouts, and holding any value that doesn’t affect rendering logic.
+
+**`useRef` Syntax in TypeScript:**
+
+```tsx showLineNumbers
+const ref = useRef<Type | null>(initialValue);
+```
+
+- **Type**: This is the type of the value you're referencing. For example, when referencing a DOM element like an `input`, you would use `HTMLInputElement`. If it's a mutable value (like a number or an object), you use the type of that value.
+- **initialValue**: The initial value assigned to the `ref`, which can be `null` or any other default value.
+
+#### Example 1: Using useRef to Access DOM Elements
+
+One of the most common use cases of `useRef` is to interact with a DOM element, such as focusing an input field when the component mounts.
+
+```tsx showLineNumbers
+import { useRef, useEffect } from "react";
+
+const MyComponent = () => {
+  // Create a ref for the input element
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Automatically focus the input when the component mounts
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus(); // Focus the input element
+    }
+  }, []);
+
+  return <input ref={inputRef} type="text" />;
+};
+```
+
+**Explanation:**
+
+- **Initial value**: `useRef<HTMLInputElement | null>(null)` creates a ref that will initially be `null`.
+- **useEffect**: The `useEffect` hook runs after the component mounts, and by this point, `inputRef.current` is pointing to the actual `<input>` DOM element.
+- **Ref usage**: Inside the effect, you check if (`inputRef.current`) to ensure the element is available before calling `.focus()`.
+
+#### Example 2: Using `useRef` to Store Mutable Data
+
+You can also use `useRef` to store data that doesn't trigger a re-render when it changes. This is useful for tracking values across renders, such as how many times the component has rendered.
+
+```tsx
+import { useRef, useState } from "react";
+
+const Counter = () => {
+  const [count, setCount] = useState(0);
+  const renderCount = useRef(1); // Initialize render count with 1
+
+  const increment = () => {
+    setCount((prevCount) => prevCount + 1);
+    renderCount.current += 1; // Increment render count without causing a re-render
+  };
+
+  return (
+    <div>
+      <p>Render count: {renderCount.current}</p>
+      <p>Count: {count}</p>
+      <button onClick={increment}>Increment</button>
+    </div>
+  );
+};
+```
+
+**Explanation:**
+
+- **renderCount is a ref**: This ref is updated every time the `increment` function is called, but changing `renderCount.current` does not trigger a re-render.
+- **Reactivity**: Only the `count` state changes trigger a re-render.
+- **Why `useRef`?**: Since `useRef` doesn’t cause re-renders, it is perfect for storing data like render counts or other values that don’t need to trigger UI updates.
+
+**Example with useState (Causing Infinite Render Loop):**
+
+```tsx
+import { useState, useEffect } from "react";
+
+const CounterWithState = () => {
+  const [count, setCount] = useState(0);
+  const [renderCount, setRenderCount] = useState(1); // Using state instead of useRef
+
+  const increment = () => {
+    setCount((prevCount) => prevCount + 1);
+  };
+
+  // This effect causes the infinite loop
+  useEffect(() => {
+    setRenderCount((prevRenderCount) => prevRenderCount + 1); // Updating the state
+  }, [count]); // This effect runs every time `count` changes
+
+  return (
+    <div>
+      <p>Render count: {renderCount}</p>
+      <p>Count: {count}</p>
+      <button onClick={increment}>Increment</button>
+    </div>
+  );
+};
+```
+
+Using `useRef` avoids the infinite loop because updating ref.current does not trigger a re-render.
+
+**Example 3: Storing the Previous Value Using useRef**
+
+```tsx showLineNumbers
+import { useState, useEffect, useRef } from "react";
+
+const PreviousValueExample = () => {
+  const [count, setCount] = useState(0);
+  const prevCountRef = useRef<number | null>(null); // Storing the previous value of `count`
+
+  useEffect(() => {
+    // After each render, we store the current count into `prevCountRef`
+    prevCountRef.current = count;
+  }, [count]); // Run this effect every time `count` changes
+
+  const increment = () => {
+    setCount((prevCount) => prevCount + 1);
+  };
+
+  return (
+    <div>
+      <p>Current Count: {count}</p>
+      <p>Previous Count: {prevCountRef.current}</p>
+      <button onClick={increment}>Increment</button>
+    </div>
+  );
+};
+
+export default PreviousValueExample;
+```
+
+**Why Does prevCountRef Hold the Previous Value?**
+
+- **Timing of `useEffect`**: `useEffect` runs **after the render is committed**. So, when `useEffect` runs, the displayed `count` is already updated to the new value. We then store that new value in `prevCountRef.current`.
+- **On the next render**, `prevCountRef.current` will hold the value from the last render because it was updated **after** the previous render finished.
+
+This is why `prevCountRef` holds the value from the last render and not the current one—it is always updated **after** the render completes.
+
+**Visual Breakdown:**
+
+1.  **Initial Render:**
+
+    - count = 0
+    - prevCountRef.current = null
+    - **After render**: prevCountRef.current = 0 (set by useEffect)
+
+2.  **First Button Click:**
+
+    - count = 1
+    - prevCountRef.current = 0 (from the previous render)
+    - **After render**: prevCountRef.current = 1 (set by useEffect)
+
+3.  **Second Button Click:**
+
+    - count = 2
+    - prevCountRef.current = 1 (from the previous render)
+    - **After render**: prevCountRef.current = 2 (set by useEffect)
+
+This pattern allows us to store the previous value because useEffect runs after the render, ensuring that the prevCountRef is updated only once the current render is complete.
+
 ### 5. `useMemo`
 
 The `useMemo` hook memoizes a value to optimize performance. It recalculates the value only when its dependencies change.
