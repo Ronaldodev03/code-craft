@@ -53,17 +53,85 @@ const DataFetcher: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch("https://api.example.com/data");
-      const result = await response.json();
-      setData(result);
+      try {
+        const response = await fetch("https://api.example.com/data");
+
+        if (!response.ok) {
+          throw new Error(`Error: ${resp1.status} or ${resp2.status}`);
+        }
+
+        const result = await response.json();
+
+        setData(result);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
     };
 
     fetchData();
-  }, []); // Empty array means it runs once on mount
+  }, []);
 
   return <pre>{JSON.stringify(data, null, 2)}</pre>;
 };
 ```
+
+#### Example: Debounced Search with Query Parameter in URL
+
+```js showLineNumbers
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+
+const DebouncedSearchWithQuery = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryFromURL = searchParams.get("query") || ""; // Get the query param from the URL
+  const [searchTerm, setSearchTerm] = useState(queryFromURL);
+  const [debouncedTerm, setDebouncedTerm] = useState(queryFromURL);
+
+  // Debounce effect: Updates debouncedTerm only after a delay
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedTerm(searchTerm);
+      setSearchParams({ query: searchTerm }); // Update the URL query parameter
+    }, 500);
+
+    return () => {
+      clearTimeout(handler); // Cleanup the timeout if searchTerm changes before the delay ends
+    };
+  }, [searchTerm, setSearchParams]);
+
+  // Simulate a search effect when debouncedTerm changes
+  useEffect(() => {
+    if (debouncedTerm) {
+      console.log(`Searching for: ${debouncedTerm}`);
+      // Insert the search logic here (API call, etc.)
+    }
+  }, [debouncedTerm]);
+
+  return (
+    <div>
+      <input
+        type="text"
+        placeholder="Search..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+      <p>Search Query: {debouncedTerm}</p>
+    </div>
+  );
+};
+
+export default DebouncedSearchWithQuery;
+```
+
+**Explanation:**
+
+1. **searchParams**: This hook from React Router is used to manage the query parameters in the URL.
+2. **queryFromURL**: This extracts the current `query` parameter from the URL. If no query is present, it defaults to an empty string.
+3. **searchTerm**: Represents the current value the user is typing in the search input.
+4. **debouncedTerm**: This is updated after a delay (500 ms) when the user stops typing, preventing unnecessary rapid updates.
+5. **setSearchParams**: This updates the `query` parameter in the URL, so the search query is always reflected in the URL as `?query=your_search_term`.
+
+Whenever the user types, the `debouncedTerm` and the URL query parameter are updated after a 500ms delay, which is useful for performance when interacting with APIs or search functionality.
 
 ### 3. `useContext`
 
@@ -79,42 +147,6 @@ const UserContext = createContext({ name: "Guest" });
 const UserProfile: React.FC = () => {
   const user = useContext(UserContext);
   return <p>User: {user.name}</p>;
-};
-```
-
-### 4. `useRef`
-
-The `useRef` hook creates a mutable object that persists for the entire lifetime of the component. It is useful for:
-
-- **Accessing DOM Elements**: You can use useRef to access a DOM element directly.
-- **Persisting Values Between Renders**: Refs can hold mutable values that do not trigger a re-render when changed. For instance, you can store the previous state of a variable using refs.
-
-  Example:
-
-```tsx showLineNumbers
-import React, { useRef, useEffect } from "react";
-
-const FocusInput: React.FC = () => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const prevCountRef = useRef<number | null>(null);
-  const [count, setCount] = React.useState(0);
-
-  useEffect(() => {
-    prevCountRef.current = count; // Store the previous count
-  }, [count]);
-
-  const handleFocus = () => {
-    inputRef.current?.focus();
-  };
-
-  return (
-    <div>
-      <input ref={inputRef} type="text" />
-      <button onClick={handleFocus}>Focus the input</button>
-      <p>Current Count: {count}</p>
-      <p>Previous Count: {prevCountRef.current}</p>
-    </div>
-  );
 };
 ```
 
@@ -151,9 +183,7 @@ const MyComponent = () => {
 
   // Automatically focus the input when the component mounts
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus(); // Focus the input element
-    }
+    inputRef.current?.focus(); // Focus the input element
   }, []);
 
   return <input ref={inputRef} type="text" />;
@@ -287,6 +317,54 @@ This is why `prevCountRef` holds the value from the last render and not the curr
 
 This pattern allows us to store the previous value because useEffect runs after the render, ensuring that the prevCountRef is updated only once the current render is complete.
 
+#### Example: File Upload with useRef and State in React
+
+```tsx
+import React, { useRef, useState } from "react";
+
+const FileUpload: React.FC = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null); // Create a ref for the file input
+  const [selectedFile, setSelectedFile] = useState<File | null>(null); // State to hold the selected file
+
+  const handleButtonClick = () => {
+    // Trigger click on the hidden input when the button is clicked
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      setSelectedFile(files[0]); // Save the selected file to state
+      console.log("Selected file:", files[0]); // Log the file for demonstration
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden" // Hide the input element
+      />
+      <button
+        onClick={handleButtonClick}
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+      >
+        Upload File
+      </button>
+      {selectedFile && ( // Display selected file info if available
+        <p className="mt-2 text-gray-700">Selected file: {selectedFile.name}</p>
+      )}
+    </div>
+  );
+};
+
+export default FileUpload;
+```
+
+Using `useRef` with a hidden file input in React is useful for creating a more user-friendly file upload interface. By programmatically triggering the file input through a custom-styled button, you can enhance the visual appeal and user experience of your application.
+
 ### 5. `useMemo`
 
 The `useMemo` hook memoizes a value to optimize performance. It recalculates the value only when its dependencies change.
@@ -364,7 +442,7 @@ const Input = forwardRef<
 >((props, ref) => <input ref={ref} {...props} />);
 
 const FocusInput: React.FC = () => {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFocus = () => {
     inputRef.current?.focus();
