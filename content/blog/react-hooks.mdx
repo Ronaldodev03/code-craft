@@ -41,9 +41,32 @@ const Counter: React.FC = () => {
 
 ### 2. `useEffect`
 
-The `useEffect` hook performs side effects in functional components, such as data fetching or subscriptions. It can replace lifecycle methods like `componentDidMount` and `componentDidUpdate`.
+The `useEffect` hook in React is used to handle side effects in functional components. Side effects can include tasks like fetching data, directly manipulating the DOM, setting up subscriptions, or updating a component's state in response to changes elsewhere.
 
-Example:
+#### Basic Syntax:
+
+```js showLineNumbers
+useEffect(() => {
+  // Side effect logic here (e.g., data fetching, subscriptions, etc.)
+  return () => {
+    // Cleanup function (optional)
+  };
+}, [dependencyArray]);
+```
+
+#### Key Concepts:
+
+1. **Callback Function**: The function passed to `useEffect` contains the side effect logic. This function runs after the component renders, ensuring that it doesn't block the rendering process.
+
+2. **Dependency Array**: The second argument of `useEffect` is an optional array that defines when the effect should be executed. Depending on how the dependency array is used, it can control how often the effect runs:
+
+   - **Empty Array `[]`**: The effect runs only once after the initial render, like `componentDidMount` in class components.
+   - **Specific Dependencies [`var1`,`var2`]**: The effect runs whenever any of the dependencies change.
+   - **No Array Provided**: The effect runs after every render (this is uncommon and not recommended unless necessary).
+
+3. **Cleanup Function**: The function returned inside `useEffect` is optional and is used for cleaning up resources, such as unsubscribing from a WebSocket or clearing timers. This cleanup runs before the component is removed from the DOM, or when the effect is re-run due to changes in dependencies.
+
+#### Example 1: Fetching Data
 
 ```tsx showLineNumbers
 import React, { useEffect, useState } from "react";
@@ -75,7 +98,50 @@ const DataFetcher: React.FC = () => {
 };
 ```
 
-#### Example: Debounced Search with Query Parameter in URL
+#### Example 2: Cleanup with Event Listeners
+
+```jsx showLineNumbers
+import { useEffect } from "react";
+
+const WindowResize = () => {
+  useEffect(() => {
+    const handleResize = () => {
+      console.log(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize); // Cleanup
+    };
+  }, []); // Empty array means this effect only runs once
+
+  return <div>Resize the window and check the console</div>;
+};
+```
+
+#### Example 3: Effect with Dependencies
+
+```jsx
+import { useEffect, useState } from "react";
+
+const Counter = () => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    console.log(`You clicked ${count} times`);
+  }, [count]); // Effect runs only when 'count' changes
+
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>Click me</button>
+    </div>
+  );
+};
+```
+
+#### Example 4: Debounced Search with Query Parameter in URL
 
 ```js showLineNumbers
 import React, { useState, useEffect } from "react";
@@ -132,6 +198,16 @@ export default DebouncedSearchWithQuery;
 5. **setSearchParams**: This updates the `query` parameter in the URL, so the search query is always reflected in the URL as `?query=your_search_term`.
 
 Whenever the user types, the `debouncedTerm` and the URL query parameter are updated after a 500ms delay, which is useful for performance when interacting with APIs or search functionality.
+
+#### Common Scenarios for useEffect:
+
+- **Data fetching** when a component mounts.
+- **Subscribing** to WebSocket or other external data sources.
+- **Handling timers** with setTimeout or setInterval.
+- **Listening** to browser events like scrolling or resizing.
+- **Syncing with state or props** to trigger side effects when they change.
+
+By using `useEffect`, you can simplify code that previously required multiple lifecycle methods in class components, such as `componentDidMount`, `componentDidUpdate`, and `componentWillUnmount`.
 
 ### 3. `useContext`
 
