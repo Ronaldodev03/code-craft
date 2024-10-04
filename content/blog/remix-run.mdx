@@ -97,6 +97,74 @@ export default function NewPost() {
 
 In this example, the `action` function handles the form submission and triggers a server-side operation, then redirects the user to the posts page.
 
+## Accessing Query Parameters in Components
+
+To access query parameters in Remix components, you can use `useLocation` from React Router.
+
+```tsx showLineNumbers
+import { useLocation } from "@remix-run/react";
+
+export default function SearchResults() {
+  const location = useLocation();
+  const query = new URLSearchParams(location.search).get("q");
+
+  return <p>Search query: {query}</p>;
+}
+```
+
+This hook provides access to the `location` object, from which you can extract the query parameters.
+
+## Dynamic URL Parameters
+
+Remix supports dynamic URL segments using the `$` symbol in route filenames. You can access these parameters in both loaders and actions.
+
+### Dynamic Params in Loaders
+
+```tsx
+// routes/posts.$postId.tsx
+import { useLoaderData } from "@remix-run/react";
+
+export const loader = async ({ params }) => {
+  const post = await getPostById(params.postId); // params.postId from URL
+  return json({ post });
+};
+
+export default function Post() {
+  const { post } = useLoaderData();
+  return <h1>{post.title}</h1>;
+}
+```
+
+Dynamic URL segments like `/posts/1` are accessible via `params` in the loader.
+
+### Dynamic Params in Actions
+
+```ts showLineNumbers
+// routes/posts.$postId.tsx
+export const action = async ({ params }) => {
+  await likePost(params.postId); // hypothetical like post function
+  return null;
+};
+```
+
+Both `params` and `loader` can use dynamic segments to fetch or modify data.
+
+## Dynamic URL Params in Components
+
+Not only can you access dynamic params in loaders and actions, but you can also get them in components using the `useParams` hook.
+
+```tsx showLineNumbers
+import { useParams } from "@remix-run/react";
+
+export default function PostDetails() {
+  const { postId } = useParams();
+
+  return <p>Post ID: {postId}</p>;
+}
+```
+
+This hook provides the current route parameters, allowing you to use them dynamically in your components.
+
 ## The `Form` Component
 
 The `Form` component in Remix is declarative and submits data directly to your action handlers. It works with all standard HTTP methods (`POST`, `PUT`, `DELETE`), and is fully progressive-enhancement-friendly.
@@ -169,41 +237,6 @@ return (
 ```
 
 This button displays feedback to the user based on the `fetcher.state`.
-
-## Dynamic URL Parameters
-
-Remix supports dynamic URL segments using the `$` symbol in route filenames. You can access these parameters in both loaders and actions.
-
-### Dynamic Params in Loaders
-
-```tsx
-// routes/posts.$postId.tsx
-import { useLoaderData } from "@remix-run/react";
-
-export const loader = async ({ params }) => {
-  const post = await getPostById(params.postId); // params.postId from URL
-  return json({ post });
-};
-
-export default function Post() {
-  const { post } = useLoaderData();
-  return <h1>{post.title}</h1>;
-}
-```
-
-Dynamic URL segments like `/posts/1` are accessible via `params` in the loader.
-
-### Dynamic Params in Actions
-
-```ts showLineNumbers
-// routes/posts.$postId.tsx
-export const action = async ({ params }) => {
-  await likePost(params.postId); // hypothetical like post function
-  return null;
-};
-```
-
-Both `params` and `loader` can use dynamic segments to fetch or modify data.
 
 ## Hooks in Remix
 
@@ -373,22 +406,6 @@ export default MyComponent;
 
 - If you want to replace the current route in the history stack instead of adding a new one, you can pass `{ replace: true }`. This prevents users from navigating back to the previous route using the back button.
 
-## Dynamic URL Params in Components
-
-Not only can you access dynamic params in loaders and actions, but you can also get them in components using the `useParams` hook.
-
-```tsx showLineNumbers
-import { useParams } from "@remix-run/react";
-
-export default function PostDetails() {
-  const { postId } = useParams();
-
-  return <p>Post ID: {postId}</p>;
-}
-```
-
-This hook provides the current route parameters, allowing you to use them dynamically in your components.
-
 ## Managing Meta Data with Loaders
 
 This is the data from your route's loader.
@@ -421,23 +438,6 @@ export const meta: MetaFunction = ({ location }) => {
   return [{ title: `Search results for "${searchQuery}"` }];
 };
 ```
-
-## Accessing Query Parameters in Components
-
-To access query parameters in Remix components, you can use `useLocation` from React Router.
-
-```tsx showLineNumbers
-import { useLocation } from "@remix-run/react";
-
-export default function SearchResults() {
-  const location = useLocation();
-  const query = new URLSearchParams(location.search).get("q");
-
-  return <p>Search query: {query}</p>;
-}
-```
-
-This hook provides access to the `location` object, from which you can extract the query parameters.
 
 ## Conclusion
 
