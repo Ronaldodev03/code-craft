@@ -299,6 +299,31 @@ return <button onClick={handleSubmit}>Submit</button>;
 
 Here, `useSubmit` lets you control when and how the form is submitted, including using a custom `FormData` object.
 
+### Difference between `fetcer.submit` and `useSubmit`
+
+The main difference between `fetcher.submit` and `useSubmit` in Remix Run lies in their intended use cases and how they manage form submissions or programmatically trigger actions.
+
+`useSubmit`
+
+- **Purpose**: `useSubmit` is a hook used to programmatically submit forms. It can trigger both `action` and `loader` calls for the current route.
+- **Use Case**: It is primarily used when you want to submit a form or trigger a data submission from within a component without using a traditional `<form>` element.
+- **Behavior**: It triggers a full-page transition, which involves updating the state of the entire page, including re-fetching loader data.
+
+`fetcher.submit`
+
+- **Purpose**: `fetcher.submit` is part of the `fetcher` object, which allows you to perform actions or data loading in the background without causing a full-page transition. It can be used to submit data to a specific `action` or trigger loaders without affecting the entire page.
+- **Use Case**: It’s useful for background data submissions or when you need to submit data without triggering page-level changes (for instance, submitting a form in a modal).
+- **Behavior**: Only updates the part of the page tied to the specific fetcher, meaning it’s more granular and doesn’t trigger a full-page reload or navigation transition.
+
+#### Summary of Differences
+
+| Feature              | useSubmit                             | fetcher.submit                                  |
+| -------------------- | ------------------------------------- | ----------------------------------------------- |
+| **Page Transition**  | Triggers full-page transition         | Does not trigger a full-page transition         |
+| **Primary Use Case** | Programmatically submitting a form    | Background data submission or granular updates  |
+| **Behavior**         | Re-fetches loaders for the whole page | Updates only the specific `fetcher`-scoped area |
+| **Granularity**      | Affects the entire page               | Scopes updates to only the `fetcher` component  |
+
 ### `useNavigation`
 
 The `useNavigation` hook gives you insight into the state of navigation in Remix. It’s useful for showing loading states during page transitions.
