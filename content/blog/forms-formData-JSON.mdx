@@ -1,8 +1,8 @@
 ---
 title: Sending Data from Forms (FormData vs. JSON)
-description: Learn how to send data from forms to a server using FormData and JSON, with practical examples including file uploads and a React and TypeScript implementation. We'll also explore how to view the data using Object.fromEntries() and for...of loops.
+description: Learn how to send data from forms to a server using FormData and JSON, with practical examples including file uploads and a React and TypeScript implementation. We'll also explore how to view the data using Object.fromEntries() and for...of loops, and how to use ZOD for type safety.
 date: 2024-09-16
-tags: ["JavaScript", "forms", "React", "TS"]
+tags: ["JavaScript", "forms", "React", "TS", "ZOD"]
 published: True
 ---
 
@@ -249,6 +249,9 @@ const MyFormWithFileUpload: React.FC = () => {
       data.append("profilePic", formData.profilePic);
     }
 
+    // const form = e.target as HTMLFormElement;
+    // const data = new FormData(form); <-- It can be done like this so that we don't have to use append method
+
     try {
       const response = await fetch("/submit", {
         method: "POST",
@@ -466,6 +469,52 @@ export default MyFormWithFileUpload;
     - For the `coverLetter` field, we use the `accept=".pdf"` attribute to restrict the file input to only accept PDFs.
 
 This setup is highly scalable. If you need more inputs, you can simply add them to the `FormDataType` type and modify the form accordingly. The iteration function will handle them seamlessly.
+
+### 4. Problems with `FormData` and TypeScript
+
+Even though the value of an input field will be a string, and if the user types no value it will be an empty string, TypeScript says the type returned from the getter is `FormDataEntryValue | null`
+
+```tsx showLineNumbers
+const quantity = formData.get("quantity");
+typeof quantity; // FormDataEntryValue | null
+```
+
+This can lead to a lot of messy work to do something simple like convert the user's input to a number:
+
+```tsx showLineNumbers
+// Assert string or null
+const quantity = formData.get("quantity") as string | null;
+
+// Then provide default incase falsy null value is returned
+const quantity = (formData.get("quantity") as string | null) || 0;
+
+// Now we can pass to parseInt to get the integer version of the user's input
+const quantity = parseInt((formData.get("quantity") as string | null) || 0);
+```
+
+With `Object.fromEntries` it's not better. They only know it's an object with an unknown amount of string-keys with `FormDataEntryValue` values:
+
+```tsx showLineNumbers
+const formValues = Object.fromEntries(formData);
+typeof formValues; // { [k: string]: FormDataEntryValue }
+```
+
+#### Problems fixed with Zod
+
+When you pass this opaque `formValues` object into the schema validator, Zod validates it based on the schema you wrote (not shown here) but then also gives you back your data but in a type-safe way according to the rules of your schema that it just passed:
+
+```tsx showLineNumbers
+const formValues = Object.fromEntries(formData); // ❌ TYPE: { [k: string]: FormDataEntryValue }
+
+const results = myFormSchema.safeParse(formValues);
+if (results.success) {
+  results.data; // ✅ TYPE: { email: string, quantity: number }
+  console.log(results.data.email); // name@someemail.com
+  console.log(results.data.quantity); // 5
+} else {
+  // Do what you want with results.errors
+}
+```
 
 ### Extra info: Type Predicate in TypeScript
 
