@@ -28,18 +28,18 @@ First, let's create a form with various input types. We'll include text fields, 
 import { z } from "zod";
 
 export const formSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  email: z.string().email("Invalid email"),
-  interests: z
-    .array(z.string())
-    .nonempty("At least one interest must be selected"),
-  profilePic: z.string().optional(), // Will handle file uploads differently
-  profileInfo: z
-    .object({
-      age: z.number().int().positive().optional(),
-      bio: z.string().optional(),
-    })
-    .optional(),
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  docFile: z.instanceof(File).nullable(), // nullable() --> can be null; optional() --> can be undefined
+  profileInfo: z.object({
+    age: z
+      .string()
+      .min(1, "Age is required")
+      .refine((value) => !isNaN(Number(value)) && Number(value) > 0, {
+        message: "Age must be a positive number",
+      }),
+    bio: z.string().nullable(),
+  }),
 });
 
 export type FormData = z.infer<typeof formSchema>;
@@ -51,90 +51,114 @@ export type FormData = z.infer<typeof formSchema>;
 
 ```tsx showLineNumbers
 // app/routes/index.tsx
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { formSchema, FormData } from "~/schemas/formSchema";
 import { json, ActionFunction } from "@remix-run/node";
 import { useFetcher } from "@remix-run/react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { formSchema, FormData } from "~/schemas/formSchema";
+
+type ActionDataType = {
+  success?: boolean;
+  errors?: {
+    name?: string[];
+    email?: string[];
+    docFile?: string[];
+    profileInfo?: { age?: string[]; bio?: string[] };
+    server?: string[];
+  };
+};
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const data = Object.fromEntries(formData);
 
-  // Extract and parse form data
-  const interests = formData.getAll("interests") as string[];
-  const profilePic = formData.get("profilePic");
-  const profileInfo = JSON.parse(formData.get("profileInfo") as string);
+  const data = {
+    name: formData.get("name"),
+    email: formData.get("email"),
+    docFile:
+      formData.get("docFile") instanceof File ? formData.get("docFile") : null,
+    profileInfo: JSON.parse(formData.get("profileInfo") as string),
+  };
 
-  // Validate data with Zod schema using safeParse
-  const validation = formSchema.safeParse({
-    ...data,
-    interests,
-    profilePic,
-    profileInfo,
-  });
+  const result = formSchema.safeParse(data);
 
-  if (!validation.success) {
+  console.log(result);
+
+  if (!result.success) {
     return json(
-      { message: "Validation failed", error: validation.error.errors },
+      { errors: result.error.flatten().fieldErrors },
       { status: 400 }
     );
   }
 
-  // Validate profilePic (optional)
-  if (!(profilePic instanceof File)) {
-    return json(
-      { message: "Profile picture must be a valid file" },
-      { status: 400 }
-    );
-  }
-
-  // POST the validated data to an API
+  // POST request
   try {
-    const response = await fetch("https://your-api-endpoint.com/submit", {
+    const response = await fetch("https://example.com/api/submit", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(validation.data),
+      body: formData,
     });
 
     if (!response.ok) {
-      throw new Error("Failed to submit data");
+      const errorData = await response.json();
+      return json(
+        {
+          errors: {
+            server: [`Error: ${errorData.message || "Unknown error"}`],
+          },
+        },
+        { status: response.status }
+      );
     }
 
-    // Return success response
-    return json({ message: "Form submitted successfully" });
+    return json({ success: true });
   } catch (error) {
+    console.error("POST request failed:", error);
     return json(
-      { message: "Submission failed", error: error.message },
+      { errors: { server: ["There was an error processing your request."] } },
       { status: 500 }
     );
   }
 };
 
 export default function MyForm() {
-  const fetcher = useFetcher();
+  const [file, setFile] = useState<File | null>(null);
+
+  const fetcher = useFetcher<ActionDataType>();
+
+  const isLoading = fetcher.state !== "idle";
+
   const {
     register,
+    //watch,
     handleSubmit,
-    formState: { errors },
     setValue,
-  } = useForm<FormData>({
+    formState: { errors },
+  } = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      profileInfo: { age: 0, bio: "" },
-    },
+    defaultValues: { docFile: null, profileInfo: { bio: null } },
   });
 
-  const onSubmit = (data: FormData) => {
+  // console.log(errors);
+  // console.log(watch());
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
+    setValue("docFile", selectedFile);
+  };
+
+  const onSubmit = (data: FormSchema) => {
+    data.profileInfo.bio =
+      data.profileInfo.bio?.trim() === "" ? null : data.profileInfo.bio;
+
     const formData = new FormData();
-    formData.append("username", data.username);
+
+    formData.append("name", data.name);
     formData.append("email", data.email);
-    data.interests.forEach((interest) =>
-      formData.append("interests", interest)
+    formData.append(
+      "docFile",
+      file && data?.docFile ? data.docFile : JSON.stringify(null)
     );
-    if (data.profilePic) formData.append("profilePic", data.profilePic[0]);
     formData.append("profileInfo", JSON.stringify(data.profileInfo));
 
     fetcher.submit(formData, {
@@ -146,58 +170,71 @@ export default function MyForm() {
 
   return (
     <fetcher.Form
-      // method="post"
-      // encType="multipart/form-data"
+      // method= "post"
+      // encType= "multipart/form-data"
       onSubmit={handleSubmit(onSubmit)}
+      className=" border border-white rounded-lg p-5 max-w-[500px] mx-auto mt-20 flex flex-col gap-4"
     >
-      {/* Username */}
-      <label htmlFor="username">Username:</label>
-      <input {...register("username")} id="username" />
-      {errors.username && <p>{errors.username.message}</p>}
+      <div>
+        <label htmlFor="name">Name</label>
+        <input id="name" {...register("name")} type="text" />
+        {errors.name && <Error message={errors.name.message || "Error"} />}
 
-      {/* Email */}
-      <label htmlFor="email">Email:</label>
-      <input type="email" {...register("email")} id="email" />
-      {errors.email && <p>{errors.email.message}</p>}
+        {fetcher.data?.errors?.name && <p>{fetcher.data.errors.name}</p>}
+      </div>
 
-      {/* Interests (Checkboxes) */}
-      <fieldset>
-        <legend>Select Interests:</legend>
-        <label>
-          <input type="checkbox" value="coding" {...register("interests")} />
-          Coding
-        </label>
-        <label>
-          <input type="checkbox" value="music" {...register("interests")} />
-          Music
-        </label>
-        <label>
-          <input type="checkbox" value="sports" {...register("interests")} />
-          Sports
-        </label>
-        {errors.interests && <p>{errors.interests.message}</p>}
-      </fieldset>
+      <div>
+        <label htmlFor="email">Email</label>
+        <input id="email" {...register("email")} type="email" />
+        {errors.email && <Error message={errors.email.message || "Error"} />}
+        {fetcher.data?.errors?.email && <p>{fetcher.data.errors.email}</p>}
+      </div>
 
-      {/* Profile Picture */}
-      <label htmlFor="profilePic">Profile Picture:</label>
-      <input type="file" {...register("profilePic")} id="profilePic" />
-      {errors.profilePic && <p>{errors.profilePic.message}</p>}
-
-      {/* Profile Info (Object Field) */}
-      <fieldset>
-        <legend>Profile Info:</legend>
+      <div>
         <label htmlFor="age">Age:</label>
         <input type="number" {...register("profileInfo.age")} id="age" />
+        {errors.profileInfo?.age && (
+          <Error message={errors.profileInfo.age.message || "Error"} />
+        )}
+      </div>
 
+      <div>
         <label htmlFor="bio">Bio:</label>
         <textarea {...register("profileInfo.bio")} id="bio" />
-        {errors.profileInfo && <p>{errors.profileInfo.message}</p>}
-      </fieldset>
+        {errors.profileInfo?.bio && (
+          <Error message={errors.profileInfo.bio.message || "Error"} />
+        )}
+      </div>
 
-      <button type="submit">Submit</button>
+      <div>
+        <label htmlFor="docFile">Document File (Optional)</label>
+        <input
+          type="file"
+          id="docFile"
+          className="input-field w-full block"
+          onChange={handleFileChange}
+        />
+        {errors.docFile && (
+          <Error message={errors.docFile.message || "Error"} />
+        )}
+      </div>
+
+      {errors.profileInfo && <p>{errors.profileInfo.message}</p>}
+
+      {fetcher.data?.errors?.server && (
+        <p className="text-red-500 text-sm">{fetcher.data.errors.server[0]}</p>
+      )}
+
+      <button type="submit">{!isLoading ? "Submit" : "Submitting..."}</button>
+
+      {fetcher.data?.success && <p>Form submitted successfully!</p>}
     </fetcher.Form>
   );
 }
+
+const Error = ({ message }: { message: string }) => {
+  return <p className=" text-red-500 text-sm">{message}</p>;
+};
 ```
 
 ### Explanation
@@ -220,6 +257,222 @@ export default function MyForm() {
 **Remix uses the HTML form attributes**: When you use a `fetcher` in Remix, the framework handles forms based on their attributes. By including `encType="multipart/form-data"`, you're indicating to Remix that it should expect a submission with data in multipart format (which can include files), and it will internally handle the proper encoding.
 
 **Remix doesn't always automatically detect `FormData`**: Even though you're passing a `FormData` instance in your JavaScript code, Remix requires `encType="multipart/form-data"` to know that files may be involved. This ensures that Remix processes the form as a multipart submission, as the form may also be handled on the server.
+
+### Example using Form component intead of fetcher.Form
+
+```tsx showLineNumbers
+// app/routes/index.tsx
+import { formSchema, FormData } from "~/schemas/formSchema";
+import { json, ActionFunction } from "@remix-run/node";
+import {
+  Form,
+  useActionData,
+  useNavigation,
+  useSubmit,
+} from "@remix-run/react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRef, useState } from "react";
+
+type FormSchema = z.infer<typeof formSchema>;
+
+type ActionDataType = {
+  success?: boolean;
+  errors?: {
+    name?: string[];
+    email?: string[];
+    docFile?: string[];
+    profileInfo?: { age?: string[]; bio?: string[] };
+    server?: string[];
+  };
+};
+
+export const action: ActionFunction = async ({ request }) => {
+  const formData = await request.formData();
+
+  const data = {
+    name: formData.get("name"),
+    email: formData.get("email"),
+    docFile:
+      formData.get("docFile") instanceof File ? formData.get("docFile") : null,
+    profileInfo: JSON.parse(formData.get("profileInfo") as string),
+  };
+
+  const result = formSchema.safeParse(data);
+
+  console.log(result);
+
+  if (!result.success) {
+    return json(
+      { errors: result.error.flatten().fieldErrors },
+      { status: 400 }
+    );
+  }
+
+  // POST request
+  try {
+    const response = await fetch("https://example.com/api/submit", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return json(
+        {
+          errors: {
+            server: [`Error: ${errorData.message || "Unknown error"}`],
+          },
+        },
+        { status: response.status }
+      );
+    }
+
+    return json({ success: true });
+  } catch (error) {
+    console.error("POST request failed:", error);
+    return json(
+      { errors: { server: ["There was an error processing your request."] } },
+      { status: 500 }
+    );
+  }
+};
+
+export default function MyForm() {
+  const [file, setFile] = useState<File | null>(null);
+
+  const [fileName, setFileName] = useState("");
+
+  const navigation = useNavigation();
+
+  const submit = useSubmit();
+
+  const actionData = useActionData<ActionDataType>();
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const isLoading = navigation.state !== "idle";
+
+  const {
+    register,
+    //watch,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { docFile: null, profileInfo: { bio: null } },
+  });
+
+  // console.log(errors);
+  // console.log(watch());
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
+    setValue("docFile", selectedFile);
+    selectedFile && setFileName(selectedFile.name);
+  };
+
+  const onSubmit = (data: FormSchema) => {
+    data.profileInfo.bio =
+      data.profileInfo.bio?.trim() === "" ? null : data.profileInfo.bio;
+
+    const formData = new FormData();
+
+    formData.append("name", data.name);
+    formData.append("email", data.email);
+    formData.append(
+      "docFile",
+      file && data?.docFile ? data.docFile : JSON.stringify(null)
+    );
+    formData.append("profileInfo", JSON.stringify(data.profileInfo));
+
+    submit(formData, {
+      method: "post",
+      encType: "multipart/form-data",
+      action: "route-of-the-action", // we don't set this when the action is in the same route
+    });
+  };
+
+  return (
+    <Form
+      // method= "post"
+      // encType= "multipart/form-data"
+      onSubmit={handleSubmit(onSubmit)}
+      className=" border border-white rounded-lg p-5 max-w-[500px] mx-auto mt-20 flex flex-col gap-4"
+    >
+      <div>
+        <label htmlFor="name">Name</label>
+        <input id="name" {...register("name")} type="text" />
+        {errors.name && <Error message={errors.name.message || "Error"} />}
+
+        {actionData?.errors?.name && <p>{actionData.errors.name}</p>}
+      </div>
+
+      <div>
+        <label htmlFor="email">Email</label>
+        <input id="email" {...register("email")} type="email" />
+        {errors.email && <Error message={errors.email.message || "Error"} />}
+        {actionData?.errors?.email && <p>{actionData.errors.email}</p>}
+      </div>
+
+      <div>
+        <label htmlFor="age">Age:</label>
+        <input type="number" {...register("profileInfo.age")} id="age" />
+        {errors.profileInfo?.age && (
+          <Error message={errors.profileInfo.age.message || "Error"} />
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="bio">Bio:</label>
+        <textarea {...register("profileInfo.bio")} id="bio" />
+        {errors.profileInfo?.bio && (
+          <Error message={errors.profileInfo.bio.message || "Error"} />
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="docFile">Document File (Optional)</label>
+        <input
+          type="file"
+          id="docFile"
+          className="hidden"
+          onChange={handleFileChange}
+          ref={fileInputRef}
+        />
+
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          type="button"
+          className=" border border-white block py-2 px-10 hover:bg-green-500"
+        >
+          {fileName ? fileName : "Add File"}
+        </button>
+
+        {errors.docFile && (
+          <Error message={errors.docFile.message || "Error"} />
+        )}
+      </div>
+
+      {errors.profileInfo && <p>{errors.profileInfo.message}</p>}
+
+      {actionData?.errors?.server && (
+        <p className="text-red-500 text-sm">{actionData.errors.server[0]}</p>
+      )}
+
+      <button type="submit">{!isLoading ? "Submit" : "Submitting..."}</button>
+
+      {actionData?.success && <p>Form submitted successfully!</p>}
+    </Form>
+  );
+}
+
+const Error = ({ message }: { message: string }) => {
+  return <p className=" text-red-500 text-sm">{message}</p>;
+};
+```
 
 ## Another Example
 
